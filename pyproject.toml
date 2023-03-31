@@ -1,3 +1,78 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
+
+[project]
+authors = [
+  {name = "ThreatConnect", email = "support@threatconnect.com"},
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Security",
+]
+dependencies = [
+  'arrow',
+  'astunparse',
+  'black',
+  'inflect',
+  'isort',
+  'pyaes',
+  'pydantic',
+  'python-dateutil',
+  'redis',
+  'requests',
+  'rich',
+  'semantic_version',
+  'tinydb',
+  'typer[all]',
+]
+description = "ThreatConnect Exchange App CLI Framework"
+dynamic = ["readme", "version"]
+keywords = ["tcex", "threatconnect"]
+license = {text = "Apache-2.0"}
+name = "tcex_cli"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+dev = [
+  "bandit",
+  "pre-commit",
+  "pydocstyle",
+  "pylint",
+  "pyright",
+  "pyupgrade",
+]
+test = [
+  "pytest",
+  "pytest-cov",
+]
+
+[project.scripts]
+tcex = "tcex_cli.cli.cli:app"
+
+[project.urls]
+Documentation = "https://github.com/ThreatConnect-Inc/tcex-cli"
+Source = "https://github.com/ThreatConnect-Inc/tcex-cli"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+version = {attr = "tcex_cli.__version__"}
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+#
+# Linters / Formatters
+#
+
 [tool.black]
 line-length = 100
 skip-string-normalization = true
