@@ -5,15 +5,7 @@ import os
 from pathlib import Path
 
 # first-party
-from tcex_cli.__metadata__ import (
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __package_name__,
-    __url__,
-    __version__,
-)
+from tcex_cli.__metadata__ import __license__, __version__
 from tcex_cli.logger.rotating_file_handler_custom import RotatingFileHandlerCustom
 from tcex_cli.logger.trace_logger import TraceLogger
 
