@@ -89,10 +89,8 @@ class Registry(Container):
                 pass
 
     def _add(self, type_or_name: str | type, value: Callable | type | tuple[bool, Callable]):
+        """Add a service to the registry."""
         key = type_or_name if isinstance(type_or_name, str) else type_or_name.__name__
-        if key in self._values:
-            raise RuntimeError(f'A service has already been provided for {key}.')
-
         self._values[key] = value
 
     def __getattr__(self, type_or_name):

@@ -1,7 +1,6 @@
 # Custom Dictionary Words
 apiservice
 appbuilderconfig
-astunparse
 autofix
 backoff
 cblades

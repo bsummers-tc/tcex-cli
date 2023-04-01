@@ -19,7 +19,6 @@ __pycache__
 #-------------------------------------------------
 build
 dist
-lib_* target
 temp
 *.egg-info
 

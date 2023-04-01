@@ -20,13 +20,13 @@ classifiers = [
 ]
 dependencies = [
   'arrow',
-  'astunparse',
   'black',
   'inflect',
   'isort',
   'pyaes',
   'pydantic',
   'python-dateutil',
+  'PyYAML',
   'redis',
   'requests',
   'rich',
@@ -34,7 +34,7 @@ dependencies = [
   'tinydb',
   'typer[all]',
 ]
-description = "ThreatConnect Exchange App CLI Framework"
+description = "ThreatConnect Exchange App CLI Tool"
 dynamic = ["readme", "version"]
 keywords = ["tcex", "threatconnect"]
 license = {text = "Apache-2.0"}
