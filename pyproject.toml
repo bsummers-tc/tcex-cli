@@ -26,6 +26,7 @@ dependencies = [
   'pyaes',
   'pydantic',
   'python-dateutil',
+  'PyYAML',
   'redis',
   'requests',
   'rich',
