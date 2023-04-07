@@ -22,6 +22,9 @@ StrOrNone = Optional[str]
 
 
 def command(
+    app_builder: bool = typer.Option(  # pylint: disable=unused-argument
+        False, help='(Advanced) If true, this command was run from App Builder.'
+    ),
     excludes: str = typer.Option(
         '', help='File and directories to exclude from build in a comma-separated list.'
     ),
