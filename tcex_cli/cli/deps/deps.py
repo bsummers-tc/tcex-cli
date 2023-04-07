@@ -20,6 +20,9 @@ StrOrNone = Optional[str]
 
 
 def command(
+    app_builder: bool = typer.Option(  # pylint: disable=unused-argument
+        False, help='(Advanced) If true, this command was run from App Builder.'
+    ),
     branch: str = typer.Option(
         default_branch,
         help=(

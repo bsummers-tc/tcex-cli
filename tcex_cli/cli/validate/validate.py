@@ -9,11 +9,11 @@ from tcex_cli.render.render import Render
 
 
 def command(
+    app_builder: bool = typer.Option(
+        False, help='(Advanced) If true, this command was run from App Builder.'
+    ),
     ignore_validation: bool = typer.Option(
         False, help='If true, validation errors will not cause an exit.'
-    ),
-    interactive: bool = typer.Option(
-        False, help='(Advanced) If true, this command will not exit until passed an exit string.'
     ),
 ):
     """Run validation of the current App.
@@ -28,7 +28,7 @@ def command(
     try:
         cli.update_system_path()
         # run in interactive
-        if interactive:
+        if app_builder:
             cli.interactive()
         else:
             cli.check_syntax()
