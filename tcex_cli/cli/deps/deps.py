@@ -20,7 +20,7 @@ StrOrNone = Optional[str]
 
 
 def command(
-    app_builder: bool = typer.Option(  # pylint: disable=unused-argument
+    app_builder: bool = typer.Option(
         False, help='(Advanced) If true, this command was run from App Builder.'
     ),
     branch: str = typer.Option(
@@ -39,7 +39,9 @@ def command(
     proxy_pass: StrOrNone = typer.Option(None, help='(Advanced) Password for the proxy server.'),
 ):
     """Install dependencies defined in the requirements.txt file."""
-    cli = DepsCli(branch, dev, no_cache_dir, pre, proxy_host, proxy_port, proxy_user, proxy_pass)
+    cli = DepsCli(
+        app_builder, branch, dev, no_cache_dir, pre, proxy_host, proxy_port, proxy_user, proxy_pass
+    )
     try:
         # validate python versions
         cli.validate_python_version()
