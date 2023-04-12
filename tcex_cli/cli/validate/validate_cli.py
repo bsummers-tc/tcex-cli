@@ -335,6 +335,15 @@ class ValidateCli(CliABC):
                 self.check_job_json()
                 self.interactive_output()
 
+                # reset - between runs
+                self.validation_data = ValidationDataModel(
+                    errors=[],
+                    fileSyntax=[],
+                    layouts=[],
+                    schema_=[],
+                    feeds=[],
+                )
+
     def interactive_output(self):
         """[App Builder] Print JSON output."""
         print(json.dumps({'validation_data': self.validation_data.dict()}))

@@ -9,6 +9,9 @@ from functools import cached_property
 from pathlib import Path
 from urllib.parse import quote, urlsplit
 
+# third-party
+from semantic_version import Version
+
 # first-party
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.key_value_model import KeyValueModel
@@ -23,6 +26,7 @@ class DepsCli(CliABC):
 
     def __init__(
         self,
+        app_builder: bool,
         branch: str,
         dev: bool,
         no_cache_dir: bool,
@@ -34,6 +38,7 @@ class DepsCli(CliABC):
     ):
         """Initialize instance properties."""
         super().__init__()
+        self.app_builder = app_builder
         self.branch = branch
         self.dev = dev
         self.no_cache_dir = no_cache_dir
@@ -216,7 +221,7 @@ class DepsCli(CliABC):
         p = subprocess.Popen(  # pylint: disable=consider-using-with
             exe_command,
             shell=False,  # nosec
-            stdin=subprocess.PIPE,
+            # stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=self.env,
@@ -241,7 +246,8 @@ class DepsCli(CliABC):
     @cached_property
     def python_executable(self) -> Path:
         """Return the python executable."""
-        return Path(sys.executable)
+        tcex_python_path = os.getenv('TCEX_PYTHON_PATH', None)
+        return Path(tcex_python_path) / 'python' if tcex_python_path else Path(sys.executable)
 
     @cached_property
     def requirements_fqfn(self):
@@ -290,6 +296,30 @@ class DepsCli(CliABC):
 
         return output.stdout.decode('utf-8')
 
+    @property
+    def target_python_version(self) -> Version | None:
+        """Return the python version that deps/pip will run with.
+
+        On App builder this could be a different version than this CLI command is running with.
+        """
+        version = None
+        try:
+            p = subprocess.Popen(  # pylint: disable=consider-using-with # nosec
+                [self.python_executable, '--version'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, _ = p.communicate()
+
+            if p.returncode == 0:
+                output = stdout.decode('utf-8').strip().split(' ')[1]
+                version = Version(output)
+        except Exception as ex:
+            # best effort
+            self.log.error(f'event=get-python-version, error="{ex}"')
+
+        return version
+
     @staticmethod
     def update_requirements_dev_txt():
         """Update the requirements_dev.txt file to support lock file."""
@@ -306,16 +336,23 @@ class DepsCli(CliABC):
 
     def validate_python_version(self):
         """Validate the python version."""
-        python_major_minor = f'{sys.version_info.major}.{sys.version_info.minor}'
-        ij_language_version = self.app.ij.model.language_version
-        language_major_minor = f'{ij_language_version.major}.{ij_language_version.minor}'
+        tpv = self.target_python_version
+        if tpv is not None:
+            target_major_minor = f'{tpv.major}.{tpv.minor}'
 
-        if python_major_minor != language_major_minor:
-            Render.panel.failure(
-                (
-                    ' • The App languageVersion defined in the install.json '
-                    'file does not match the current Python version.\n'
-                    f' • defined-version={language_major_minor} '
-                    f'!= current-version={python_major_minor}.'
-                ),
-            )
+            # temp logic until all TC instances are on version 7.2
+            language_major_minor = self.app.ij.model.language_version
+            if isinstance(language_major_minor, Version):
+                language_major_minor = (
+                    f'{language_major_minor.major}.{language_major_minor.minor}'  # type: ignore
+                )
+
+            if target_major_minor != language_major_minor:
+                Render.panel.failure(
+                    (
+                        ' • The App languageVersion defined in the install.json '
+                        'file does not match the current Python version.\n'
+                        f' • defined-version={language_major_minor} '
+                        f'!= current-version={target_major_minor}.'
+                    ),
+                )
