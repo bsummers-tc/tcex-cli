@@ -7,7 +7,7 @@ import random
 import string
 import sys
 from abc import ABC, abstractmethod
-from pathlib import Path
+from pathlib import Path, PosixPath
 from typing import Any
 
 # third-party
@@ -15,7 +15,6 @@ import redis
 
 # first-party
 from tcex_cli.cli.run.model.app_trigger_service_model import AppTriggerServiceModel
-from tcex_cli.cli.run.model.common_model import CommonModel
 from tcex_cli.cli.run.model.module_request_tc_model import ModuleRequestsTcModel
 from tcex_cli.logger.trace_logger import TraceLogger
 from tcex_cli.pleb.cached_property import cached_property
@@ -40,24 +39,27 @@ class LaunchABC(ABC):
         self.stored_keyboard_settings: Any
         self.util = Util()
 
-    def create_input_config(self, inputs: CommonModel):
+    def create_input_config(self, inputs: dict):
         """Create files necessary to start a Service App."""
-        data = inputs.json(exclude_none=False, exclude_unset=False, exclude_defaults=False)
-        key = ''.join(random.choice(string.ascii_lowercase) for i in range(16))  # nosec
-        encrypted_data = self.util.encrypt_aes_cbc(key, data)
+
+        json_ = json.dumps(inputs, indent=4)
+        key = ''.join(random.choice(string.ascii_lowercase) for _ in range(16))
+        encrypted_data = self.util.encrypt_aes_cbc(key, json_)
 
         # ensure that the in directory exists
-        inputs.tc_in_path.mkdir(parents=True, exist_ok=True)
+        tc_in_path = PosixPath(inputs.get('tc_in_path', ''))
+
+        tc_in_path.mkdir(parents=True, exist_ok=True)
 
         # write the file in/.app_params.json
-        app_params_json = inputs.tc_in_path / '.test_app_params.json'
+        app_params_json = tc_in_path / '.test_app_params.json'
         with app_params_json.open(mode='wb') as fh:
             fh.write(encrypted_data)
 
         # TODO: [high] TEMP - DELETE THIS
-        app_params_json_decrypted = inputs.tc_in_path / '.test_app_params-decrypted.json'
+        app_params_json_decrypted = tc_in_path / '.test_app_params-decrypted.json'
         with app_params_json_decrypted.open(mode='w') as fh:
-            fh.write(data)
+            fh.write(json_)
 
         # when the App is launched the tcex.input module reads the encrypted
         # file created above # for inputs. in order to decrypt the file, this
@@ -69,6 +71,11 @@ class LaunchABC(ABC):
     @abstractmethod
     def inputs(self) -> AppTriggerServiceModel:
         """Return the App inputs."""
+
+    @cached_property
+    def inputs_staged(self) -> dict | None:
+        """Return the App inputs."""
+        return None
 
     def launch(self):
         """Launch the App."""
@@ -84,7 +91,7 @@ class LaunchABC(ABC):
                 sys.modules['tcex.registry'].registry._reset()
 
             # create the config file
-            self.create_input_config(self.inputs)
+            self.create_input_config(self.inputs_staged or self.inputs.dict())
 
             run = Run()
             run.setup()
