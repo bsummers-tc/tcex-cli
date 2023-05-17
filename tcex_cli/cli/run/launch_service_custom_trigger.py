@@ -1,7 +1,5 @@
 """TcEx Framework Module"""
 # standard library
-import json
-import sys
 from threading import Thread
 
 # third-party
@@ -11,7 +9,7 @@ from rich.live import Live
 
 # first-party
 from tcex_cli.cli.run.launch_service_common_trigger import LaunchServiceCommonTriggers
-from tcex_cli.cli.run.model.app_trigger_service_model import AppTriggerServiceModel
+from tcex_cli.cli.run.model.app_trigger_service_model import AppTriggerInputModel
 from tcex_cli.pleb.cached_property import cached_property
 
 
@@ -19,20 +17,9 @@ class LaunchServiceCustomTrigger(LaunchServiceCommonTriggers):
     """Launch an App"""
 
     @cached_property
-    def inputs(self) -> AppTriggerServiceModel:
+    def model(self) -> AppTriggerInputModel:
         """Return the App inputs."""
-        app_inputs = {}
-        if self.config_json.is_file():
-            with self.config_json.open('r', encoding='utf-8') as fh:
-                try:
-                    app_inputs = json.load(fh)
-                except ValueError as ex:
-                    print(f'Error loading app_inputs.json: {ex}')
-                    sys.exit(1)
-
-        self.trigger_inputs = app_inputs.pop('trigger_input', [])
-        model = AppTriggerServiceModel(**app_inputs)
-        return model
+        return AppTriggerInputModel(**self.construct_model_inputs())
 
     def live_data_display(self):
         """Display live data."""
@@ -70,12 +57,16 @@ class LaunchServiceCustomTrigger(LaunchServiceCommonTriggers):
 
         # add call back to process server channel messages
         self.message_broker.add_on_message_callback(
-            callback=self.process_client_channel, index=0, topics=[self.inputs.tc_svc_client_topic]
+            callback=self.process_client_channel,
+            index=0,
+            topics=[self.model.inputs.tc_svc_client_topic],
         )
 
         # add call back to process server channel messages
         self.message_broker.add_on_message_callback(
-            callback=self.process_server_channel, index=0, topics=[self.inputs.tc_svc_server_topic]
+            callback=self.process_server_channel,
+            index=0,
+            topics=[self.model.inputs.tc_svc_server_topic],
         )
 
         # start live display

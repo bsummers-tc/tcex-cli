@@ -12,10 +12,10 @@ from rich.table import Table
 
 # first-party
 from tcex_cli.app.config.install_json import InstallJson
-from tcex_cli.cli.run.launch_service_common import LaunchServiceCommon
+from tcex_cli.cli.run.launch_service_common import LaunchServiceCommonABC
 
 
-class LaunchServiceCommonTriggers(LaunchServiceCommon):
+class LaunchServiceCommonTriggers(LaunchServiceCommonABC):
     """Launch Class for all Service type Apps."""
 
     def __init__(self, config_json: Path):
@@ -24,7 +24,6 @@ class LaunchServiceCommonTriggers(LaunchServiceCommon):
 
         # properties
         self.stop_server = False
-        self.trigger_inputs: list[dict]
         self.trigger_outputs: dict = {}
 
     def live_data_table(self):
@@ -36,7 +35,7 @@ class LaunchServiceCommonTriggers(LaunchServiceCommon):
         table.add_column('Output')
 
         try:
-            for trigger_id, inputs in enumerate(self.trigger_inputs):
+            for trigger_id, inputs in enumerate(self.model.trigger_inputs):
                 inputs_modified = inputs.copy()
                 # remove tc_playbook_out_variables as it is not helpful in this context
                 if 'tc_playbook_out_variables' in inputs_modified:
@@ -114,7 +113,7 @@ class LaunchServiceCommonTriggers(LaunchServiceCommon):
 
     def publish_create_config(self):
         """Publish create config message."""
-        for trigger_id, t_input in enumerate(self.trigger_inputs):
+        for trigger_id, t_input in enumerate(self.model.trigger_inputs):
             t_input['tc_playbook_out_variables'] = ','.join(InstallJson().tc_playbook_out_variables)
             self.publish(
                 json.dumps(
@@ -127,5 +126,5 @@ class LaunchServiceCommonTriggers(LaunchServiceCommon):
                         'config': t_input,
                     }
                 ),
-                self.inputs.tc_svc_server_topic,
+                self.model.inputs.tc_svc_server_topic,
             )

@@ -1,7 +1,5 @@
 """TcEx Framework Module"""
 # standard library
-import json
-import sys
 from threading import Thread
 
 # third-party
@@ -12,7 +10,7 @@ from rich.panel import Panel
 
 # first-party
 from tcex_cli.cli.run.launch_service_common_trigger import LaunchServiceCommonTriggers
-from tcex_cli.cli.run.model.app_webhook_trigger_service_model import AppWebhookTriggerServiceModel
+from tcex_cli.cli.run.model.app_webhook_trigger_service_model import AppWebhookTriggerInputModel
 from tcex_cli.cli.run.request_handler_webhook import RequestHandlerWebhook
 from tcex_cli.cli.run.web_server import WebServer
 from tcex_cli.pleb.cached_property import cached_property
@@ -25,7 +23,7 @@ class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
     def api_web_server(self) -> WebServer:
         """Return an instance of the API Web Server."""
         return WebServer(
-            self.inputs,
+            self.model.inputs,
             self.message_broker,
             self.publish,
             self.redis_client,
@@ -34,20 +32,9 @@ class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
         )
 
     @cached_property
-    def inputs(self) -> AppWebhookTriggerServiceModel:
+    def model(self) -> AppWebhookTriggerInputModel:
         """Return the App inputs."""
-        app_inputs = {}
-        if self.config_json.is_file():
-            with self.config_json.open('r', encoding='utf-8') as fh:
-                try:
-                    app_inputs = json.load(fh)
-                except ValueError as ex:
-                    print(f'Error loading app_inputs.json: {ex}')
-                    sys.exit(1)
-
-        self.trigger_inputs = app_inputs.pop('trigger_input', [])
-        model = AppWebhookTriggerServiceModel(**app_inputs)
-        return model
+        return AppWebhookTriggerInputModel(**self.construct_model_inputs())
 
     def live_data_display(self):
         """Display live data."""
@@ -55,7 +42,7 @@ class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
         layout = Layout()
 
         # Divide the "screen" in to three parts
-        header_minimum = len(self.trigger_inputs) + 2 if self.trigger_inputs else 3
+        header_minimum = len(self.model.trigger_inputs) + 2 if self.model.trigger_inputs else 3
         layout.split(
             Layout(self.live_data_header(), name='header', ratio=1, minimum_size=header_minimum),
             Layout(self.live_data_table(), name='main', ratio=10, minimum_size=3),
@@ -79,18 +66,18 @@ class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
 
     def live_data_header(self) -> Panel:
         """Display live header."""
-        if self.trigger_inputs:
+        if self.model.trigger_inputs:
             panel_data = []
-            for trigger_id, _ in enumerate(self.trigger_inputs):
+            for trigger_id, _ in enumerate(self.model.trigger_inputs):
                 panel_data.append(
-                    f'Running server: [{self.accent}]http://{self.inputs.api_service_host}'
-                    f':{self.inputs.api_service_port}/{trigger_id}[/{self.accent}]'
+                    f'Running server: [{self.accent}]http://{self.model.inputs.api_service_host}'
+                    f':{self.model.inputs.api_service_port}/{trigger_id}[/{self.accent}]'
                     f' - Trigger ID: [{self.accent}]{trigger_id}[/{self.accent}]'
                 )
         else:
             panel_data = (
-                f'Running server: [{self.accent}]http://{self.inputs.api_service_host}'
-                f':{self.inputs.api_service_port}[/{self.accent}]'
+                f'Running server: [{self.accent}]http://{self.model.inputs.api_service_host}'
+                f':{self.model.inputs.api_service_port}[/{self.accent}]'
             )
 
         return Panel(
@@ -114,12 +101,16 @@ class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
 
         # add call back to process server channel messages
         self.message_broker.add_on_message_callback(
-            callback=self.process_client_channel, index=0, topics=[self.inputs.tc_svc_client_topic]
+            callback=self.process_client_channel,
+            index=0,
+            topics=[self.model.inputs.tc_svc_client_topic],
         )
 
         # add call back to process server channel messages
         self.message_broker.add_on_message_callback(
-            callback=self.process_server_channel, index=0, topics=[self.inputs.tc_svc_server_topic]
+            callback=self.process_server_channel,
+            index=0,
+            topics=[self.model.inputs.tc_svc_server_topic],
         )
 
         # start live display

@@ -7,17 +7,19 @@ import random
 import string
 import sys
 from abc import ABC, abstractmethod
-from pathlib import Path, PosixPath
+from pathlib import Path
 from typing import Any
 
 # third-party
 import redis
+from pydantic import BaseModel
 
 # first-party
-from tcex_cli.cli.run.model.app_trigger_service_model import AppTriggerServiceModel
+from tcex_cli.cli.run.model.common_app_input_model import CommonAppInputModel
 from tcex_cli.cli.run.model.module_request_tc_model import ModuleRequestsTcModel
 from tcex_cli.logger.trace_logger import TraceLogger
 from tcex_cli.pleb.cached_property import cached_property
+from tcex_cli.render.render import Render
 from tcex_cli.requests_tc import RequestsTc, TcSession
 from tcex_cli.util import Util
 
@@ -39,27 +41,24 @@ class LaunchABC(ABC):
         self.stored_keyboard_settings: Any
         self.util = Util()
 
-    def create_input_config(self, inputs: dict):
+    def create_input_config(self, inputs: BaseModel):
         """Create files necessary to start a Service App."""
-
-        json_ = json.dumps(inputs, indent=4)
-        key = ''.join(random.choice(string.ascii_lowercase) for _ in range(16))
-        encrypted_data = self.util.encrypt_aes_cbc(key, json_)
+        data = inputs.json(exclude_none=False, exclude_unset=False, exclude_defaults=False)
+        key = ''.join(random.choice(string.ascii_lowercase) for i in range(16))  # nosec
+        encrypted_data = self.util.encrypt_aes_cbc(key, data)
 
         # ensure that the in directory exists
-        tc_in_path = PosixPath(inputs.get('tc_in_path', ''))
-
-        tc_in_path.mkdir(parents=True, exist_ok=True)
+        inputs.tc_in_path.mkdir(parents=True, exist_ok=True)
 
         # write the file in/.app_params.json
-        app_params_json = tc_in_path / '.test_app_params.json'
+        app_params_json = inputs.tc_in_path / '.test_app_params.json'
         with app_params_json.open(mode='wb') as fh:
             fh.write(encrypted_data)
 
         # TODO: [high] TEMP - DELETE THIS
-        app_params_json_decrypted = tc_in_path / '.test_app_params-decrypted.json'
+        app_params_json_decrypted = inputs.tc_in_path / '.test_app_params-decrypted.json'
         with app_params_json_decrypted.open(mode='w') as fh:
-            fh.write(json_)
+            fh.write(data)
 
         # when the App is launched the tcex.input module reads the encrypted
         # file created above # for inputs. in order to decrypt the file, this
@@ -69,13 +68,25 @@ class LaunchABC(ABC):
 
     @cached_property
     @abstractmethod
-    def inputs(self) -> AppTriggerServiceModel:
+    def model(self) -> CommonAppInputModel:
         """Return the App inputs."""
 
-    @cached_property
-    def inputs_staged(self) -> dict | None:
+    def print_input_data(self):
+        """Print the App data."""
+        input_data = self.live_format_dict(self.model.inputs.dict()).strip()
+        Render.panel.info(f'{input_data}', f'[{self.panel_title}]Input Data[/]')
+
+    def construct_model_inputs(self) -> dict:
         """Return the App inputs."""
-        return None
+        app_inputs = {}
+        if self.config_json.is_file():
+            with self.config_json.open('r', encoding='utf-8') as fh:
+                try:
+                    app_inputs = json.load(fh)
+                except ValueError as ex:
+                    print(f'Error loading app_inputs.json: {ex}')
+                    sys.exit(1)
+        return app_inputs
 
     def launch(self):
         """Launch the App."""
@@ -91,7 +102,7 @@ class LaunchABC(ABC):
                 sys.modules['tcex.registry'].registry._reset()
 
             # create the config file
-            self.create_input_config(self.inputs_staged or self.inputs.dict())
+            self.create_input_config(self.model.inputs)
 
             run = Run()
             run.setup()
@@ -120,7 +131,7 @@ class LaunchABC(ABC):
     @cached_property
     def module_requests_tc_model(self) -> ModuleRequestsTcModel:
         """Return the Module App Model."""
-        return ModuleRequestsTcModel(**self.inputs.dict())
+        return ModuleRequestsTcModel(**self.model.inputs.dict())
 
     def output_data(self, context: str) -> dict:
         """Return playbook/service output data."""
@@ -150,9 +161,9 @@ class LaunchABC(ABC):
         """Return the Redis client."""
         return redis.Redis(
             connection_pool=redis.ConnectionPool(
-                host=self.inputs.tc_kvstore_host,
-                port=self.inputs.tc_kvstore_port,
-                db=self.inputs.tc_playbook_kvstore_id,
+                host=self.model.inputs.tc_kvstore_host,
+                port=self.model.inputs.tc_kvstore_port,
+                db=self.model.inputs.tc_playbook_kvstore_id,
             )
         )
 

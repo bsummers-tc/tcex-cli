@@ -4,6 +4,7 @@
 from pydantic import Extra
 
 # first-party
+from tcex_cli.cli.run.model.common_app_input_model import CommonAppInputModel
 from tcex_cli.cli.run.model.common_model import CommonModel
 from tcex_cli.cli.run.model.playbook_common_model import PlaybookCommonModel
 from tcex_cli.cli.run.model.service_model import ServiceModel
@@ -24,3 +25,9 @@ class AppTriggerServiceModel(CommonModel, PlaybookCommonModel, ServiceModel):
         env_file_encoding = 'utf-8'
         json_encoders = json_encoders
         validate_assignment = True
+
+
+class AppTriggerInputModel(CommonAppInputModel):
+    """Model Definition"""
+
+    inputs: AppTriggerServiceModel

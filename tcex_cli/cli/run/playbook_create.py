@@ -232,7 +232,15 @@ class PlaybookCreate:
         # properties
         self.log = logger
 
-    def any(self, staged_variable: StagedVariable, value):
+    @staticmethod
+    def get_data_type(key: str) -> str:
+        """Return the data type for the provided key."""
+        if not key or not isinstance(key, str) or key.count('!') != 1:
+            raise RuntimeError(f'Invalid key: {key} provided.')
+
+        return key.split('!')[1].lower()
+
+    def any(self, key: str, value: str | dict | list[str | dict]):
         """Write the value to the keystore for all types."""
 
         variable_type_map = {
@@ -246,6 +254,6 @@ class PlaybookCreate:
             'tcentityarray': TCEntityArrayStagger,
             'tcbatch': TCBatchStagger,
         }
-        stagger = variable_type_map.get(staged_variable.type.lower(), StringStagger)
-        stagger = stagger(staged_variable, value)
+        data_type = self.get_data_type(key).lower()
+        stagger = variable_type_map[data_type](key, value)
         return stagger.stage(self.key_value_store, self.context)
