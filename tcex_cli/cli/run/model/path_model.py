@@ -1,15 +1,10 @@
 """TcEx Framework Module"""
 
 # standard library
-from pathlib import Path, PosixPath
+from pathlib import Path
 
 # third-party
 from pydantic import BaseSettings, Extra
-
-json_encoders = {
-    PosixPath: lambda v: 'testing',
-    Path: lambda v: 'testing',
-}  # pylint: disable=unnecessary-lambda
 
 
 class PathModel(BaseSettings):
@@ -24,7 +19,6 @@ class PathModel(BaseSettings):
         """DataModel Config"""
 
         extra = Extra.allow
-        json_encoders = json_encoders
         case_sensitive = False
         env_file = '.env'
         env_file_encoding = 'utf-8'
