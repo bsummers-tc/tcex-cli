@@ -81,6 +81,7 @@ class RunCli(CliABC):
             case 'playbook':
                 Render.panel.info('Launching Playbook App', f'[{self.panel_title}]Running App[/]')
                 launch_app = LaunchPlaybook(config_json)
+                launch_app.stage()
                 exit_code = launch_app.launch()
                 launch_app.print_input_data()
                 launch_app.print_output_data()

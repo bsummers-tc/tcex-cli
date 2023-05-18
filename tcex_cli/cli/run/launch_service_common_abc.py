@@ -7,6 +7,7 @@ import os
 import sys
 import termios
 import tty
+from abc import ABC
 from pathlib import Path
 from threading import Event, Thread
 
@@ -21,7 +22,7 @@ from tcex_cli.message_broker.mqtt_message_broker import MqttMessageBroker
 from tcex_cli.pleb.cached_property import cached_property
 
 
-class LaunchServiceCommon(LaunchABC):
+class LaunchServiceCommonABC(LaunchABC, ABC):
     """Launch Class for all Service type Apps."""
 
     def __init__(self, config_json: Path):
@@ -33,6 +34,7 @@ class LaunchServiceCommon(LaunchABC):
         self.display_thread: Thread
         self.message_data: list[dict[str, str]] = []
         self.stop_server = False
+        self.stored_keyboard_settings = None
 
         # reset keyboard listener on exit
         atexit.register(self.keyboard_listener_reset)
@@ -46,7 +48,7 @@ class LaunchServiceCommon(LaunchABC):
                     self.log.error('Shutting down app.')
                     self.publish(
                         json.dumps({'appId': 95, 'command': 'Shutdown'}),
-                        self.inputs.tc_svc_server_topic,
+                        self.model.inputs.tc_svc_server_topic,
                     )
 
                 # case _:
@@ -114,9 +116,9 @@ class LaunchServiceCommon(LaunchABC):
     def message_broker(self):
         """Return an instance of the Message Broker."""
         broker = MqttMessageBroker(
-            self.inputs.tc_svc_broker_host,
-            self.inputs.tc_svc_broker_port,
-            self.inputs.tc_svc_broker_timeout,
+            self.model.inputs.tc_svc_broker_host,
+            self.model.inputs.tc_svc_broker_port,
+            self.model.inputs.tc_svc_broker_timeout,
         )
         broker.register_callbacks()
         return broker
@@ -132,8 +134,8 @@ class LaunchServiceCommon(LaunchABC):
     def on_connect(self, client: mqtt.Client, userdata, flags, rc: int):
         """Handle message broker on_connect events."""
         # subscribe to topics
-        self.message_broker.client.subscribe(self.inputs.tc_svc_client_topic)
-        self.message_broker.client.subscribe(self.inputs.tc_svc_server_topic)
+        self.message_broker.client.subscribe(self.model.inputs.tc_svc_client_topic)
+        self.message_broker.client.subscribe(self.model.inputs.tc_svc_server_topic)
         self.log.info('Connected to message broker and subscribing to client topic.')
 
     def publish(self, message: str, topic: str):
