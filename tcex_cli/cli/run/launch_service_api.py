@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 # first-party
-from tcex_cli.cli.run.launch_service_common import LaunchServiceCommonABC
+from tcex_cli.cli.run.launch_service_common_abc import LaunchServiceCommonABC
 from tcex_cli.cli.run.model.app_api_service_model import AppApiInputModel
 from tcex_cli.cli.run.request_handler_api import RequestHandlerApi
 from tcex_cli.cli.run.web_server import WebServer
