@@ -8,12 +8,12 @@ from rich.layout import Layout
 from rich.live import Live
 
 # first-party
-from tcex_cli.cli.run.launch_service_common_trigger import LaunchServiceCommonTriggers
+from tcex_cli.cli.run.launch_service_common_trigger_abc import LaunchServiceCommonTriggersABC
 from tcex_cli.cli.run.model.app_trigger_service_model import AppTriggerInputModel
 from tcex_cli.pleb.cached_property import cached_property
 
 
-class LaunchServiceCustomTrigger(LaunchServiceCommonTriggers):
+class LaunchServiceCustomTrigger(LaunchServiceCommonTriggersABC):
     """Launch an App"""
 
     @cached_property

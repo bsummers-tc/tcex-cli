@@ -9,14 +9,14 @@ from rich.live import Live
 from rich.panel import Panel
 
 # first-party
-from tcex_cli.cli.run.launch_service_common_trigger import LaunchServiceCommonTriggers
+from tcex_cli.cli.run.launch_service_common_trigger_abc import LaunchServiceCommonTriggersABC
 from tcex_cli.cli.run.model.app_webhook_trigger_service_model import AppWebhookTriggerInputModel
 from tcex_cli.cli.run.request_handler_webhook import RequestHandlerWebhook
 from tcex_cli.cli.run.web_server import WebServer
 from tcex_cli.pleb.cached_property import cached_property
 
 
-class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggers):
+class LaunchServiceWebhookTrigger(LaunchServiceCommonTriggersABC):
     """Launch an App"""
 
     @cached_property
