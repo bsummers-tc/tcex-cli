@@ -137,6 +137,7 @@ class LaunchABC(ABC):
         """Return playbook/service output data."""
         output_data_ = self.redis_client.hgetall(context)
         if output_data_:
+            print(output_data_)
             output_data_ = {
                 k: json.loads(v) for k, v in self.output_data_process(output_data_).items()
             }
