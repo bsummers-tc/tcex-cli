@@ -74,11 +74,8 @@ class BaseStagger:
         self.validate()
         if not self.value:
             return None
-        print(f'initial: {self.value}')
         value = self.transform()
-        print(f'transformed: {value}')
         value = self.serialize(value)
-        print(f'serialized: {value}')
         return kv_store.hset(context, self.key, value)
 
 
