@@ -170,7 +170,8 @@ class KeyValueArrayStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a list of KeyValues."""
         if not isinstance(self.value, list):
-            raise RuntimeError('Invalid data provided for KeyValue.')
+            raise RuntimeError('Invalid data provided for KeyValueArray.')
+
         for value in self.value:
             if not isinstance(value, dict):
                 raise RuntimeError('Invalid data provided for KeyValue.')
