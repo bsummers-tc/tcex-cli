@@ -4,6 +4,7 @@
 import datetime
 import json
 import random
+from abc import ABC
 from pathlib import Path
 
 # third-party
@@ -12,10 +13,10 @@ from rich.table import Table
 
 # first-party
 from tcex_cli.app.config.install_json import InstallJson
-from tcex_cli.cli.run.launch_service_common import LaunchServiceCommonABC
+from tcex_cli.cli.run.launch_service_common_abc import LaunchServiceCommonABC
 
 
-class LaunchServiceCommonTriggers(LaunchServiceCommonABC):
+class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
     """Launch Class for all Service type Apps."""
 
     def __init__(self, config_json: Path):

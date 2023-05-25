@@ -25,6 +25,7 @@ class LaunchPlaybook(LaunchABC):
         """Return the App inputs."""
         inputs = self.construct_model_inputs()
         model = AppPlaybookInputModel(**inputs)
+        model.stage.kvstore = inputs.get('stage', {}).get('kvstore', {})
 
         return model
 
