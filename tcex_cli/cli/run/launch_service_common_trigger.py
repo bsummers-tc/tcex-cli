@@ -12,7 +12,7 @@ from rich.table import Table
 
 # first-party
 from tcex_cli.app.config.install_json import InstallJson
-from tcex_cli.cli.run.launch_service_common import LaunchServiceCommonABC
+from tcex_cli.cli.run.launch_service_common_abc import LaunchServiceCommonABC
 
 
 class LaunchServiceCommonTriggers(LaunchServiceCommonABC):
