@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.0.4
+
+-   APP-4563 - [SPEC-TOOL] Add Minimum Server Version to the README.md
+-   APP-4661 - [MIGRATE] Added new patterns to migrate for TcEx 2 to TcEx 4
+-   APP-4662 - [SPEC-TOOL] Fixed issue for Boolean type in spec-tool
+-   APP-4663 - [SPEC-TOOL] Updated install.json generation to support service field for service Apps
+
 ## 1.0.3
 
 -   APP-4397 - [PACKAGE] Updated feature generation logic to make runtimeVariable on be added for Playbook Apps

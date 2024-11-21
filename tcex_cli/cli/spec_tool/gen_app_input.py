@@ -1,4 +1,5 @@
 """TcEx Framework Module"""
+
 # standard library
 import logging
 import os
@@ -10,6 +11,7 @@ from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.spec_tool.gen_app_input_static import GenAppInputStatic
 from tcex_cli.pleb.cached_property import cached_property
 from tcex_cli.render.render import Render
+from tcex_cli.util import Util
 from tcex_cli.util.code_operation import CodeOperation
 
 # get logger
@@ -289,7 +291,7 @@ class GenAppInput(CliABC):
 
         # append default if one exists
         if input_data.type == 'Boolean':
-            type_ += f' = {input_data.default or False}'
+            type_ += f' = {Util.to_bool(input_data.default)}'
 
         return type_, field_types
 

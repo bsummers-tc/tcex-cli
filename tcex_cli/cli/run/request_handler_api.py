@@ -1,4 +1,5 @@
 """TcEx Framework Module"""
+
 # standard library
 import http.server
 import json
@@ -181,6 +182,10 @@ class RequestHandlerApi(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         """Handle GET method."""
         return self.call_service('GET')
+
+    def do_OPTIONS(self):
+        """Handle OPTIONS method."""
+        return self.call_service('OPTIONS')
 
     def do_PATCH(self):
         """Handle PATCH method."""
