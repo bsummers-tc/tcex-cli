@@ -38,11 +38,11 @@ class PackageCli(CliABC):
         """Return a list of files and folders that should be excluded during the build process."""
         # glob files/directories
         return [
-            '__pycache__',
-            '.pytest_cache',  # pytest cache directory
-            '*.iml',  # PyCharm files
-            '*.pyc',  # any pyc file
-            '*.zip',  # any zip file
+            '**/__pycache__/**',
+            '**/.pytest_cache/**',  # pytest cache directory
+            '**/*.iml',  # PyCharm files
+            '**/*.pyc',  # any pyc file
+            '**/*.zip',  # any zip file
         ]
 
     @cached_property
@@ -80,6 +80,8 @@ class PackageCli(CliABC):
             'JIRA.html',  # documentation file
             'JIRA.md',  # documentation file
             'karma.conf.js',  # karma configuration file
+            'mappings/projects',  # transform builder project mappings
+            'mappings/source',  # transform builder source input files
             'package-lock.json',  # npm package lock file
             'package.json',  # npm package file
             'pyproject.toml',  # project configuration file
@@ -102,17 +104,17 @@ class PackageCli(CliABC):
 
     def exclude_files(self, src: str, names: list):
         """Ignore exclude files in shutil.copytree (callback)."""
-        exclude_list = self._build_excludes_glob
-        if src == os.getcwd():
-            # get excludes that are specific to the Apps base directory
-            exclude_list = self._build_excludes_base
+        exclude_list = self._build_excludes_glob + self._build_excludes_base
 
-        excluded_files = []
-        for n in names:
-            for e in exclude_list:
-                if fnmatch.fnmatch(n, e):
-                    excluded_files.append(n)
-        return excluded_files
+        cwd = os.getcwd() + os.sep
+        ignored_names = set()
+        for pattern in exclude_list:
+            for name in names:
+                n = os.path.join(src, name)
+                n = n.replace(cwd, '')
+                if fnmatch.fnmatch(n, pattern):
+                    ignored_names.add(name)
+        return ignored_names
 
     def interactive_output(self):
         """[App Builder] Print JSON output containing results of the package command."""
