@@ -1,5 +1,7 @@
 """TcEx Framework Module"""
+
 # standard library
+import os
 import sys
 from pathlib import Path
 
@@ -29,6 +31,9 @@ class RunCli(CliABC):
 
         # validate in App directory
         self._validate_in_app_directory()
+
+        # set os environment variables
+        os.environ['TCEX_RUN_LOCAL'] = '1'
 
     def _display_api_settings(self, api_inputs: AppApiServiceModel | AppWebhookTriggerServiceModel):
         """Display API settings."""
@@ -69,7 +74,6 @@ class RunCli(CliABC):
 
     def run(self, config_json: Path, debug: bool = False):
         """Run the App"""
-
         match self.ij.model.runtime_level.lower():
             case 'apiservice':
                 Render.panel.info('Launching API Service', f'[{self.panel_title}]Running App[/]')
@@ -77,7 +81,6 @@ class RunCli(CliABC):
                 self._display_api_settings(launch_app.model.inputs)
                 launch_app.setup(debug)
                 exit_code = launch_app.launch()
-                self.exit_cli(exit_code)
 
             case 'feedapiservice':
                 Render.panel.info(
@@ -86,23 +89,19 @@ class RunCli(CliABC):
                 launch_app = LaunchServiceApi(config_json)
                 launch_app.setup(debug)
                 exit_code = launch_app.launch()
-                self.exit_cli(exit_code)
 
             case 'organization':
                 Render.panel.info('Launching Job App', f'[{self.panel_title}]Running App[/]')
                 launch_app = LaunchOrganization(config_json)
                 exit_code = launch_app.launch()
                 launch_app.print_input_data()
-                self.exit_cli(exit_code)
 
             case 'playbook':
-                Render.panel.info('Launching Playbook App', f'[{self.panel_title}]Running App[/]')
                 launch_app = LaunchPlaybook(config_json)
                 launch_app.stage()
                 exit_code = launch_app.launch()
                 launch_app.print_input_data()
                 launch_app.print_output_data()
-                self.exit_cli(exit_code)
 
             case 'triggerservice':
                 Render.panel.info(
@@ -111,7 +110,6 @@ class RunCli(CliABC):
                 launch_app = LaunchServiceCustomTrigger(config_json)
                 launch_app.setup(debug)
                 exit_code = launch_app.launch()
-                self.exit_cli(exit_code)
 
             case 'webhooktriggerservice':
                 Render.panel.info(
@@ -121,4 +119,9 @@ class RunCli(CliABC):
                 self._display_api_settings(launch_app.model.inputs)
                 launch_app.setup(debug)
                 exit_code = launch_app.launch()
-                self.exit_cli(exit_code)
+
+            case _:
+                exit_code = 1
+
+        # exit execution
+        self.exit_cli(exit_code)

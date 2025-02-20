@@ -22,8 +22,10 @@ dependencies = [
   "arrow",
   "black",
   "debugpy",
+  "fakeredis",
   "inflection",
   "isort",
+  "jmespath",
   "paho-mqtt<2.0.0",
   "pyaes",
   "pydantic<2.0.0",
@@ -34,7 +36,7 @@ dependencies = [
   "rich",
   "semantic_version",
   "tinydb",
-  "typer[all]",
+  "typer",
 ]
 description = "ThreatConnect Exchange App CLI Tool"
 dynamic = ["readme", "version"]
@@ -50,6 +52,7 @@ dev = [
   "pydocstyle",
   "pylint",
   "pyright",
+  "python-dotenv",
   "pyupgrade",
 ]
 test = [
@@ -123,8 +126,10 @@ disable = [
   "too-many-instance-attributes",
   "too-many-lines",
   "too-many-locals",
+  "too-many-positional-arguments",
   "too-many-public-methods",
   "too-many-return-statements",
+  "unnecessary-lambda",
 ]
 extension-pkg-whitelist = "pydantic"
 
