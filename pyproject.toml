@@ -35,7 +35,6 @@ dependencies = [
   "redis<5.0.0",
   "requests>=2.32.3",
   "rich>=13.9.4",
-  "ruff>=0.9.7",
   "semantic-version>=2.10.0",
   "tinydb>=4.8.2",
   "typer>=0.15.1",
@@ -58,8 +57,6 @@ Source = "https://github.com/ThreatConnect-Inc/tcex-cli"
 dev = [
   "bandit>=1.8.3",
   "pre-commit>=4.1.0",
-  "pydocstyle>=6.3.0",
-  "pylint>=3.3.4",
   "pyright>=1.1.394",
   "pyupgrade>=3.19.1",
   "ruff>=0.9.7",
@@ -237,6 +234,9 @@ select = [
 # "ERA", # eradicate
 # "S", # flake8-bandit
 # "Q", # flake8-quotes
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["F401"]
 
 [tool.ruff.lint.pydocstyle]
 # https://docs.astral.sh/ruff/linter/

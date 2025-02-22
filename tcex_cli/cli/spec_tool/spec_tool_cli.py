@@ -53,7 +53,6 @@ class SpecToolCli(CliABC):
         """Check if git is installed."""
         installed = True
         try:
-            #  pylint: disable=consider-using-with
             subprocess.Popen('git', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # nosec
         except OSError:
             installed = False
@@ -65,7 +64,6 @@ class SpecToolCli(CliABC):
         """Attempt to rename file with git mv."""
         moved = True
         try:
-            #  pylint: disable=consider-using-with
             cmd = subprocess.Popen(  # nosec
                 ['git', 'mv', src_filename, dest_filename],
                 stdout=subprocess.DEVNULL,

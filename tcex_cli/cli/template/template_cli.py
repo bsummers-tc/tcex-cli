@@ -660,7 +660,7 @@ class TemplateCli(CliABC):
             return True
 
         # determine if file requires user prompt
-        return str(item.relative_path) in (template_config.template_files or [])
+        return str(item.relative_path) not in (template_config.template_files or [])
 
     def update_tcex_json(self):
         """Update the tcex.json file."""
