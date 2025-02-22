@@ -74,8 +74,7 @@ class LaunchServiceCommonABC(LaunchABC, ABC):
         t = Thread(name='broker-listener', target=self.message_broker.connect, args=(), daemon=True)
         t.start()
 
-    # pylint: disable=unused-argument
-    def on_connect(self, client: mqtt.Client, userdata, flags, rc: int):
+    def on_connect(self, client: mqtt.Client, userdata, flags, rc: int):  # noqa: ARG002
         """Handle message broker on_connect events."""
         # subscribe to topics
         self.message_broker.client.subscribe(self.model.inputs.tc_svc_client_topic)  # type: ignore

@@ -1,6 +1,7 @@
 """TcEx Framework Module"""
 
 # standard library
+import contextlib
 import logging
 import os
 import sys
@@ -21,7 +22,7 @@ from tcex_cli.util import Util
 _logger = logging.getLogger(__name__.split('.', maxsplit=1)[0])
 
 
-class CliABC(ABC):
+class CliABC(ABC):  # noqa: B024
     """Base Class for ThreatConnect command line tools."""
 
     def __init__(self):
@@ -74,7 +75,7 @@ class CliABC(ABC):
     @cached_property
     def cli_out_path(self) -> Path:
         """Return the path to the tcex cli command out directory."""
-        _out_path = Path(os.path.expanduser('~/.tcex'))
+        _out_path = Path(Path.expanduser(Path('~/.tcex')))
         _out_path.mkdir(exist_ok=True, parents=True)
         return _out_path
 
@@ -96,10 +97,8 @@ class CliABC(ABC):
         # insert the current working directory into the system Path for
         # the App, ensuring that it is always the first entry in the list.
         cwd_str = str(Path.cwd())
-        try:
+        with contextlib.suppress(ValueError):
             sys.path.remove(cwd_str)
-        except ValueError:
-            pass
         sys.path.insert(0, cwd_str)
 
         # reload install.json after path is update (get updated sdkVersion)

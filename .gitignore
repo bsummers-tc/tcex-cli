@@ -7,12 +7,14 @@
 #-------------------------------------------------
 # Language Exclusions
 #-------------------------------------------------
+.DS_Store
 __pycache__
 *.env
 *.pyc
 .coverage
 .pytest_cache
 .tox
+.venv
 
 #-------------------------------------------------
 # Build Exclusions
@@ -34,7 +36,6 @@ temp
 .settings
 .vs
 .vscode
-nbproject
 
 #-------------------------------------------------
 # Module Specific Exclusions

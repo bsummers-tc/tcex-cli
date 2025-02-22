@@ -80,11 +80,11 @@ class GenAppInputStatic:
             [
                 f'''{self.i1}"""Base model for the App containing any common inputs.''',
                 '',
-                f'''{self.i1}Trigger Service App inputs do not take playbookDataType.''',
+                f"""{self.i1}Trigger Service App inputs do not take playbookDataType.""",
                 '',
-                f'''{self.i1}This is the configuration input that is sent to the Service''',
-                f'''{self.i1}on startup. The inputs that are configured in the Service''',
-                f'''{self.i1}configuration in the Platform with serviceConfig: true''',
+                f"""{self.i1}This is the configuration input that is sent to the Service""",
+                f"""{self.i1}on startup. The inputs that are configured in the Service""",
+                f"""{self.i1}configuration in the Platform with serviceConfig: true""",
                 f'''{self.i1}"""''',
                 '',
                 '',
@@ -98,9 +98,9 @@ class GenAppInputStatic:
         typing_modules: set[str],
     ) -> list:
         """Return app_inputs.py import data."""
-        field_types_modules_ = ', '.join(sorted(list(field_type_modules)))
-        pydantic_modules_ = ', '.join(sorted(list(pydantic_modules)))
-        typing_modules_ = ', '.join(sorted(list(typing_modules)))
+        field_types_modules_ = ', '.join(sorted(field_type_modules))
+        pydantic_modules_ = ', '.join(sorted(pydantic_modules))
+        typing_modules_ = ', '.join(sorted(typing_modules))
 
         # defined imports
         _imports = ['"""App Inputs"""']
@@ -146,7 +146,7 @@ class GenAppInputStatic:
             app_model = 'ServiceConfigModel'
 
         _code = [
-            '''class AppInputs:''',
+            """class AppInputs:""",
             f'''{self.i1}"""App Inputs"""''',
             '',
         ]
@@ -154,9 +154,9 @@ class GenAppInputStatic:
         # add __init__ method
         _code.extend(
             [
-                f'''{self.i1}def __init__(self, inputs: Input):''',
+                f"""{self.i1}def __init__(self, inputs: Input):""",
                 f'''{self.i2}"""Initialize instance properties."""''',
-                f'''{self.i2}self.inputs = inputs''',
+                f"""{self.i2}self.inputs = inputs""",
                 '',
             ]
         )
@@ -165,16 +165,16 @@ class GenAppInputStatic:
         _code.extend(
             [
                 '',
-                f'''{self.i1}def update_inputs(self):''',
+                f"""{self.i1}def update_inputs(self):""",
                 f'''{self.i2}"""Add custom App model to inputs.''',
                 '',
                 (
-                    f'''{self.i2}Input will be validate when the '''
-                    '''model is added an any exceptions will'''
+                    f"""{self.i2}Input will be validate when the """
+                    """model is added an any exceptions will"""
                 ),
-                f'''{self.i2}cause the App to exit with a status code of 1.''',
+                f"""{self.i2}cause the App to exit with a status code of 1.""",
                 f'''{self.i2}"""''',
-                f'''{self.i2}self.inputs.add_model({app_model})''',
+                f"""{self.i2}self.inputs.add_model({app_model})""",
                 '',
                 '',
             ]
@@ -186,11 +186,11 @@ class GenAppInputStatic:
         cmm = ''
         for action, class_name in class_model_map.items():
             action_name = action.lower().replace(' ', '_')
-            cmm += f'\'{action_name}\': {class_name},'
+            cmm += f"'{action_name}': {class_name},"
         cmm = f'{{{cmm}}}'
 
         _code = [
-            '''class AppInputs:''',
+            """class AppInputs:""",
             f'''{self.i1}"""App Inputs"""''',
             '',
         ]
@@ -198,9 +198,9 @@ class GenAppInputStatic:
         # add __init__ method
         _code.extend(
             [
-                f'''{self.i1}def __init__(self, inputs: Input):''',
+                f"""{self.i1}def __init__(self, inputs: Input):""",
                 f'''{self.i2}"""Initialize instance properties."""''',
-                f'''{self.i2}self.inputs = inputs''',
+                f"""{self.i2}self.inputs = inputs""",
                 '',
             ]
         )
@@ -212,26 +212,26 @@ class GenAppInputStatic:
         _code.extend(
             [
                 (
-                    f'''{self.i1}def get_model(self, tc_action: str '''
-                    '''| None = None) -> type[BaseModel]:'''
+                    f"""{self.i1}def get_model(self, tc_action: str """
+                    """| None = None) -> type[BaseModel]:"""
                 ),
                 f'''{self.i2}"""Return the model based on the current action."""''',
                 (
-                    f'''{self.i2}tc_action = tc_action or self.inputs.model_unresolved.tc_action'''
-                    '''  # type: ignore'''
+                    f"""{self.i2}tc_action = tc_action or self.inputs.model_unresolved.tc_action"""
+                    """  # type: ignore"""
                 ),
-                f'''{self.i2}if tc_action is None:''',
-                f'''{self.i3}raise RuntimeError('No action (tc_action) found in inputs.')''',
+                f"""{self.i2}if tc_action is None:""",
+                f"""{self.i3}raise RuntimeError('No action (tc_action) found in inputs.')""",
                 '',
-                f'''{self.i2}action_model = self.action_model_map(tc_action.lower())''',
-                f'''{self.i2}if action_model is None:''',
-                f'''{self.i3}# pylint: disable=broad-exception-raised''',
-                f'''{self.i3}raise RuntimeError(''',
-                f'''{self.i4}\'No model found for action: \'''',
-                f'''{self.i4}f'{{self.inputs.model_unresolved.tc_action}}'  # type: ignore''',
-                f'''{self.i3})''',
+                f"""{self.i2}action_model = self.action_model_map(tc_action.lower())""",
+                f"""{self.i2}if action_model is None:""",
+                f"""{self.i3}# pylint: disable=broad-exception-raised""",
+                f"""{self.i3}raise RuntimeError(""",
+                f"""{self.i4}\'No model found for action: \'""",
+                f"""{self.i4}f'{{self.inputs.model_unresolved.tc_action}}'  # type: ignore""",
+                f"""{self.i3})""",
                 '',
-                f'''{self.i2}return action_model''',
+                f"""{self.i2}return action_model""",
                 '',
             ]
         )
@@ -239,16 +239,16 @@ class GenAppInputStatic:
         # add update_inputs method
         _code.extend(
             [
-                f'''{self.i1}def update_inputs(self):''',
+                f"""{self.i1}def update_inputs(self):""",
                 f'''{self.i2}"""Add custom App model to inputs.''',
                 '',
                 (
-                    f'''{self.i2}Input will be validate when the model '''
-                    '''is added an any exceptions will'''
+                    f"""{self.i2}Input will be validate when the model """
+                    """is added an any exceptions will"""
                 ),
-                f'''{self.i2}cause the App to exit with a status code of 1.''',
+                f"""{self.i2}cause the App to exit with a status code of 1.""",
                 f'''{self.i2}"""''',
-                f'''{self.i2}self.inputs.add_model(self.get_model())''',
+                f"""{self.i2}self.inputs.add_model(self.get_model())""",
                 '',
                 '',
             ]
@@ -258,11 +258,11 @@ class GenAppInputStatic:
     def template_app_inputs_class_tc_action_model_map(self, cmm: str) -> list:
         """Return the model map method"""
         return [
-            f'''{self.i1}def action_model_map(self, tc_action: str) -> type[BaseModel]:''',
+            f"""{self.i1}def action_model_map(self, tc_action: str) -> type[BaseModel]:""",
             f'''{self.i2}"""Return action model map."""''',
-            f'''{self.i2}_action_model_map = {cmm}''',
-            f'''{self.i2}tc_action_key = tc_action.lower().replace(' ', '_')''',
-            f'''{self.i2}return _action_model_map.get(tc_action_key)''',
+            f"""{self.i2}_action_model_map = {cmm}""",
+            f"""{self.i2}tc_action_key = tc_action.lower().replace(' ', '_')""",
+            f"""{self.i2}return _action_model_map.get(tc_action_key)""",
             '',
         ]
 
@@ -273,10 +273,10 @@ class GenAppInputStatic:
             [
                 f'''{self.i1}"""Base model for Trigger (playbook) config.''',
                 '',
-                f'''{self.i1}Trigger Playbook inputs do not take playbookDataType.''',
+                f"""{self.i1}Trigger Playbook inputs do not take playbookDataType.""",
                 '',
-                f'''{self.i1}This is the configuration input that gets sent to the service''',
-                f'''{self.i1}when a Playbook is enabled (createConfig).''',
+                f"""{self.i1}This is the configuration input that gets sent to the service""",
+                f"""{self.i1}when a Playbook is enabled (createConfig).""",
                 f'''{self.i1}"""''',
                 '',
                 '',

@@ -40,7 +40,7 @@ class DeployCli(CliABC):
 
     def _check_file(self):
         """Return True if file exists."""
-        if self._app_file and not os.path.isfile(self._app_file):
+        if self._app_file and not Path(self._app_file).is_file():
             Render.panel.failure(f'Could not find file: {self._app_file}.')
 
     @property
@@ -51,7 +51,7 @@ class DeployCli(CliABC):
             app_files = list(target_fqpn.glob('*.tcx'))
             if len(app_files) > 1:
                 Render.panel.failure(
-                    'More than one App file found, can\'t autodetect the correct file.',
+                    "More than one App file found, can't autodetect the correct file.",
                 )
             elif not app_files:
                 Render.panel.failure('No App package found. Please run "tcex package" first.')
@@ -81,13 +81,12 @@ class DeployCli(CliABC):
         """Authenticate with TcEx."""
         return f'https://{self.server}/api'
 
-    # pylint: disable=consider-using-with
     def deploy_app(self):
         """Deploy the App to ThreatConnect Exchange."""
         files = {
             'allowAllOrgs': self.allow_all_orgs,
             'allowAppDistribution': self.allow_distribution,
-            'fileData': ('filename', open(self.app_file, 'rb'), 'application/octet-stream'),
+            'fileData': ('filename', self.app_file.open(mode='rb'), 'application/octet-stream'),
         }
         try:
             response = self.session.post('/internal/apps/exchange/install', files=files, timeout=60)
@@ -102,7 +101,7 @@ class DeployCli(CliABC):
             Render.table.key_value(
                 'Failed To Deploy App',
                 {
-                    'File Name': os.path.basename(self.app_file),
+                    'File Name': self.app_file.name,
                     'Reason': reason,
                     'Status Code': str(response.status_code),
                     'URL': response.request.url,
@@ -120,7 +119,7 @@ class DeployCli(CliABC):
             Render.table.key_value(
                 'Successfully Deployed App',
                 {
-                    'File Name': os.path.basename(self.app_file),
+                    'File Name': self.app_file.name,
                     'Display Name': response_data.get('displayName'),
                     'Program Name': response_data.get('programName'),
                     'Program Version': response_data.get('programVersion'),

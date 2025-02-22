@@ -1,9 +1,9 @@
 """TcEx Framework Module"""
 
 # standard library
-import os
 import shutil
 import subprocess  # nosec
+from pathlib import Path
 
 # third-party
 from pydantic import ValidationError
@@ -104,7 +104,7 @@ class SpecToolCli(CliABC):
         self.write_app_file(gen.filename, f'{config}\n')
 
         # for reload/rewrite/fix of app_spec.yml
-        self.asy.contents  # pylint: disable=pointless-statement
+        _ = self.asy.contents
 
     def generate_install_json(self):
         """Generate the install.json file."""
@@ -217,7 +217,8 @@ class SpecToolCli(CliABC):
 
     def rename_app_file(self, src_filename: str, dest_filename: str):
         """Rename the app.yaml file to app_spec.yml."""
-        if os.path.isfile(src_filename):
+        src_file = Path(src_filename)
+        if src_file.is_file():
             self.log.debug(
                 f'action=rename-file, src-filename={src_filename}, dest-filename={dest_filename}'
             )
@@ -234,7 +235,8 @@ class SpecToolCli(CliABC):
         """Write contents to file."""
         action = 'Created'
         write_file = True
-        if os.path.isfile(file_name):
+        filename = Path(file_name)
+        if filename.is_file():
             action = 'Updated'
             if self.overwrite is False:
                 response = Render.prompt.input(
@@ -246,7 +248,7 @@ class SpecToolCli(CliABC):
                     write_file = False
 
         if write_file is True:
-            with open(file_name, 'w', encoding='utf-8') as f:
+            with filename.open(mode='w', encoding='utf-8') as f:
                 f.write(contents)
 
         self.summary_data[file_name] = f'[green]{action}[/green]'

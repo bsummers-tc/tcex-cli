@@ -90,21 +90,20 @@ class LaunchABC(ABC):
                 try:
                     app_inputs = json.load(fh)
                 except ValueError as ex:
-                    print(f'Error loading app_inputs.json: {ex}')
+                    print(f'Error loading app_inputs.json: {ex}')  # noqa: T201
                     sys.exit(1)
         return app_inputs
 
     def launch(self):
         """Launch the App."""
         # third-party
-        from run import Run  # type: ignore # pylint: disable=import-error,import-outside-toplevel
+        from run import Run  # type: ignore
 
         # run the app
         exit_code = 0
         try:
-            # pylint: disable=protected-access
             if 'tcex.pleb.registry' in sys.modules:
-                sys.modules['tcex.registry'].registry._reset()
+                sys.modules['tcex.registry'].registry._reset()  # noqa: SLF001
 
             # create the config file
             self.create_input_config(self.model.inputs)
@@ -126,11 +125,12 @@ class LaunchABC(ABC):
 
         formatted_data = ''
         for key, value in sorted(data.items()):
+            value_ = value
             if isinstance(value, dict):
-                value = json.dumps(value)
+                value_ = json.dumps(value)
             if isinstance(value, str):
-                value = value.replace('\n', '\\n')
-            formatted_data += f'''{key}: [{self.accent}]{value}[/]\n'''
+                value_ = value.replace('\n', '\\n')
+            formatted_data += f"""{key}: [{self.accent}]{value_}[/]\n"""
         return formatted_data
 
     @cached_property
@@ -142,24 +142,24 @@ class LaunchABC(ABC):
         """Return playbook/service output data."""
         output_data_ = self.redis_client.hgetall(context)
         if output_data_:
-            output_data_ = {
+            return {
                 k: json.loads(v)
                 for k, v in self.output_data_process(output_data_).items()  # type: ignore
             }
-            return output_data_
         return {}
 
     def output_data_process(self, output_data: dict) -> dict:
         """Process the output data."""
         output_data_: dict[str, dict | list | str] = {}
         for k, v in output_data.items():
+            v_ = v
             if isinstance(v, list):
-                v = [i.decode('utf-8') if isinstance(i, bytes) else i for i in v]
+                v_ = [i.decode('utf-8') if isinstance(i, bytes) else i for i in v]
             elif isinstance(v, bytes):
-                v = v.decode('utf-8')
+                v_ = v.decode('utf-8')
             elif isinstance(v, dict):
-                v = self.output_data_process(v)
-            output_data_[k.decode('utf-8')] = v
+                v_ = self.output_data_process(v)
+            output_data_[k.decode('utf-8')] = v_
         return output_data_
 
     def redis_server(self):
@@ -212,12 +212,12 @@ class LaunchABC(ABC):
     def tc_token(self, token_type: str = 'api'):  # nosec
         """Return a valid API token."""
         data = None
+        http_success = 200
         token = None
 
         # retrieve token from API using HMAC auth
-        # pylint: disable=no-member
         r = self.session.post(f'/internal/token/{token_type}', json=data, verify=True)
-        if r.status_code == 200:
+        if r.status_code == http_success:
             token = r.json().get('data')
             self.log.info(
                 f'step=setup, event=using-token, token={token}, token-elapsed={r.elapsed}'

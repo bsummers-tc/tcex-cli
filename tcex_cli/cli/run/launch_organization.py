@@ -1,7 +1,5 @@
 """Run App Local"""
 
-# pylint: disable=wrong-import-position
-
 # first-party
 from tcex_cli.cli.run.launch_abc import LaunchABC
 from tcex_cli.cli.run.model.app_organization_model import AppOrganizationInputModel

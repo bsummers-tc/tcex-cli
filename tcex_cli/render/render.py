@@ -1,7 +1,7 @@
 """TcEx Framework Module"""
 
 # third-party
-from rich import print  # pylint: disable=redefined-builtin
+from rich import print as print_
 from rich.console import Group
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn
@@ -103,7 +103,9 @@ class Render(RenderUtil):
 
         # render panel->table
         if data:
-            print(Panel(table, border_style=border_style, title=title, title_align=cls.title_align))
+            print_(
+                Panel(table, border_style=border_style, title=title, title_align=cls.title_align)
+            )
 
     @classmethod
     def table_package_summary(cls, title: str, summary_data: AppMetadataModel):
@@ -132,12 +134,12 @@ class Render(RenderUtil):
         )
 
         for name, value in summary_data.dict().items():
-            name = name.replace('_', ' ').title()
-            table.add_row(name, value)
+            name_ = name.replace('_', ' ').title()
+            table.add_row(name_, value)
 
         # render panel->table
         if summary_data:
-            print(Panel(table, border_style='', title=title, title_align=cls.title_align))
+            print_(Panel(table, border_style='', title=title, title_align=cls.title_align))
 
     @classmethod
     def table_template_list(
@@ -185,7 +187,7 @@ class Render(RenderUtil):
 
             panel_group = Group(*panels)
             panel_title = template_type.replace('_', ' ').title()
-            print(
+            print_(
                 Panel(
                     panel_group,
                     border_style='',
@@ -225,4 +227,4 @@ class Render(RenderUtil):
 
         # render panel->table
         if summary_data:
-            print(Panel(table, border_style='', title=title, title_align='left'))
+            print_(Panel(table, border_style='', title=title, title_align='left'))

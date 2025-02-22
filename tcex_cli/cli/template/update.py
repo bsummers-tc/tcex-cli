@@ -16,8 +16,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
@@ -29,7 +29,7 @@ def command(
         default_branch, help='The git branch of the tcex-app-template repository to use.'
     ),
     force: bool = typer.Option(
-        False, help="Update files from template even if they haven't changed."
+        default=False, help="Update files from template even if they haven't changed."
     ),
     proxy_host: StrOrNone = typer.Option(None, help='(Advanced) Hostname for the proxy server.'),
     proxy_port: IntOrNone = typer.Option(None, help='(Advanced) Port number for the proxy server.'),

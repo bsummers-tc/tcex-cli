@@ -3,9 +3,9 @@
 # standard library
 import ast
 import json
-import os
 import sys
 import traceback
+from contextlib import suppress
 from pathlib import Path
 
 # third-party
@@ -16,12 +16,9 @@ from tcex_cli.app.config.job_json import JobJson
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.validation_data_model import ValidationDataModel, ValidationItemModel
 
-try:
+with suppress(ModuleNotFoundError):
     # standard library
     import sqlite3
-except ModuleNotFoundError:
-    # this module is only required for certain CLI commands
-    pass
 
 
 class ValidateCli(CliABC):
@@ -54,22 +51,22 @@ class ValidateCli(CliABC):
 
         status = True
         try:
-            self.app.ij.model
+            _ = self.app.ij.model
         except ValidationError as ex:
             self.invalid_json_files.append(self.app.ij.fqfn.name)
             status = False
             for error in json.loads(ex.json()):
                 location = [str(location) for location in error.get('loc')]
                 self.validation_data.errors.append(
-                    '''Schema validation failed for install.json. '''
-                    f'''{error.get('msg')}: {' -> '.join(location)}'''
+                    """Schema validation failed for install.json. """
+                    f"""{error.get('msg')}: {' -> '.join(location)}"""
                 )
         except ValueError:
             # any JSON decode error will be caught during syntax validation
             return
 
         self.validation_data.schema_.append(
-            ValidationItemModel(**{'name': self.app.ij.fqfn.name, 'status': status})
+            ValidationItemModel(name=self.app.ij.fqfn.name, status=status)
         )
 
     def check_job_json(self):
@@ -103,14 +100,14 @@ class ValidateCli(CliABC):
 
             try:
                 # validate the schema
-                jj.model
+                _ = jj.model
             except ValidationError as ex:
                 status = False
                 for error in json.loads(ex.json()):
                     location = [str(location) for location in error.get('loc')]
                     self.validation_data.errors.append(
-                        f'''Schema validation failed for {feed.job_file}. '''
-                        f'''{error.get('msg')}: {' -> '.join(location)}'''
+                        f"""Schema validation failed for {feed.job_file}. """
+                        f"""{error.get('msg')}: {' -> '.join(location)}"""
                     )
 
             # validate program name
@@ -130,7 +127,7 @@ class ValidateCli(CliABC):
                 )
 
             self.validation_data.schema_.append(
-                ValidationItemModel(**{'name': feed.job_file, 'status': status})
+                ValidationItemModel(name=feed.job_file, status=status)
             )
 
     def check_layout_json(self):
@@ -140,22 +137,22 @@ class ValidateCli(CliABC):
 
         status = True
         try:
-            self.app.lj.model
+            _ = self.app.lj.model
         except ValidationError as ex:
             self.invalid_json_files.append(self.app.ij.fqfn.name)
             status = False
             for error in json.loads(ex.json()):
                 location = [str(location) for location in error.get('loc')]
                 self.validation_data.errors.append(
-                    f'''Schema validation failed for layout.json. '''
-                    f'''{error.get('msg')}: {' -> '.join(location)}'''
+                    f"""Schema validation failed for layout.json. """
+                    f"""{error.get('msg')}: {' -> '.join(location)}"""
                 )
         except ValueError:
             # any JSON decode error will be caught during syntax validation
             return
 
         self.validation_data.schema_.append(
-            ValidationItemModel(**{'name': self.app.lj.fqfn.name, 'status': status})
+            ValidationItemModel(name=self.app.lj.fqfn.name, status=status)
         )
 
         if status is True:
@@ -215,25 +212,22 @@ class ValidateCli(CliABC):
                     # any item in list afterwards is a problem
                     ij_input_names.remove(p.name)
 
-                if 'sqlite3' in sys.modules:
-                    if p.display:
-                        display_query = (
-                            f'SELECT * FROM {self.app.permutation.input_table}'  # nosec
-                            f' WHERE {p.display}'
+                if 'sqlite3' in sys.modules and p.display:
+                    display_query = (
+                        f'SELECT * FROM {self.app.permutation.input_table}'  # nosec
+                        f' WHERE {p.display}'
+                    )
+                    try:
+                        self.app.permutation.db_conn.execute(display_query.replace('"', ''))
+                    except sqlite3.Error:  # type: ignore
+                        self.validation_data.errors.append(
+                            'Layouts input.parameters[].display validations failed '
+                            f'("{p.display}" query is an invalid statement).'
                         )
-                        try:
-                            self.app.permutation.db_conn.execute(display_query.replace('"', ''))
-                        except sqlite3.Error:  # type: ignore
-                            self.validation_data.errors.append(
-                                'Layouts input.parameters[].display validations failed '
-                                f'("{p.display}" query is an invalid statement).'
-                            )
-                            status = False
+                        status = False
 
         # update validation data for module
-        self.validation_data.layouts.append(
-            ValidationItemModel(**{'name': 'inputs', 'status': status})
-        )
+        self.validation_data.layouts.append(ValidationItemModel(name='inputs', status=status))
 
         if ij_input_names:
             input_names = ','.join(ij_input_names)
@@ -255,25 +249,22 @@ class ValidateCli(CliABC):
                 )
                 status = False
 
-            if 'sqlite3' in sys.modules:
-                if o.display:
-                    display_query = (
-                        f'SELECT * FROM {self.app.permutation.input_table} '  # nosec
-                        f'WHERE {o.display}'
+            if 'sqlite3' in sys.modules and o.display:
+                display_query = (
+                    f'SELECT * FROM {self.app.permutation.input_table} '  # nosec
+                    f'WHERE {o.display}'
+                )
+                try:
+                    self.app.permutation.db_conn.execute(display_query.replace('"', ''))
+                except sqlite3.Error:  # type: ignore
+                    self.validation_data.errors.append(
+                        f"""Layouts outputs.display validations failed ("{o.display}" """
+                        f"""query is an invalid statement)."""
                     )
-                    try:
-                        self.app.permutation.db_conn.execute(display_query.replace('"', ''))
-                    except sqlite3.Error:  # type: ignore
-                        self.validation_data.errors.append(
-                            f"""Layouts outputs.display validations failed ("{o.display}" """
-                            f"""query is an invalid statement)."""
-                        )
-                        status = False
+                    status = False
 
         # update validation data for module
-        self.validation_data.layouts.append(
-            ValidationItemModel(**{'name': 'outputs', 'status': status})
-        )
+        self.validation_data.layouts.append(ValidationItemModel(name='outputs', status=status))
 
     def check_syntax(self, app_path=None):
         """Run syntax on each ".py" and ".json" file.
@@ -281,7 +272,7 @@ class ValidateCli(CliABC):
         Args:
             app_path (str, optional): The path of Python files.
         """
-        fqpn = Path(app_path or os.getcwd())
+        fqpn = Path(app_path or Path.cwd())
 
         for fqfn in sorted(fqpn.iterdir()):
             error = None
@@ -320,7 +311,7 @@ class ValidateCli(CliABC):
 
             # store status for this file
             self.validation_data.fileSyntax.append(
-                ValidationItemModel(**{'name': fqfn.name, 'status': status})
+                ValidationItemModel(name=fqfn.name, status=status)
             )
 
     def interactive(self):
@@ -347,4 +338,4 @@ class ValidateCli(CliABC):
 
     def interactive_output(self):
         """[App Builder] Print JSON output."""
-        print(json.dumps({'validation_data': self.validation_data.dict()}))
+        print(json.dumps({'validation_data': self.validation_data.dict()}))  # noqa: T201

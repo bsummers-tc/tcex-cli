@@ -15,8 +15,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
@@ -29,7 +29,7 @@ def command(
     proxy_user: StrOrNone = typer.Option(None, help='(Advanced) Username for the proxy server.'),
     proxy_pass: StrOrNone = typer.Option(None, help='(Advanced) Password for the proxy server.'),
 ):
-    """List templates
+    r"""List templates
 
     The template name will be pulled from tcex.json by default. If the template option
     is provided it will be used instead of the value in the tcex.json file. The tcex.json

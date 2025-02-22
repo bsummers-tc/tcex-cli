@@ -10,7 +10,7 @@ from pydantic.fields import ModelField  # TYPE-CHECKING
 
 # first-party
 from tcex_cli.input.field_type.exception import InvalidEmptyValue, InvalidLengthValue, InvalidType
-from tcex_cli.logger.sensitive_filter import SensitiveFilter  # pylint: disable=no-name-in-module
+from tcex_cli.logger.sensitive_filter import SensitiveFilter
 from tcex_cli.util.variable import BinaryVariable
 
 # get logger
@@ -65,7 +65,7 @@ class Sensitive:
 
     def __repr__(self) -> str:
         """."""
-        return f'''Sensitive('{self}')'''
+        return f"""Sensitive('{self}')"""
 
     def __str__(self) -> str:
         """Return the value masked.
@@ -74,9 +74,15 @@ class Sensitive:
         than X, then show the first and last character of the value. This is very
         helpful in debugging App where the incorrect credential could have been passed.
         """
-        if self._sensitive_value and _logger.getEffectiveLevel() <= 10:  # DEBUG or TRACE
-            if isinstance(self.value, str) and len(self.value) >= 10:
-                return f'''{self.value[:1]}{'*' * 4}{self.value[-1:]}'''
+        # DEBUG or TRACE
+        trace_logging_level = 10
+        if (
+            self._sensitive_value
+            and _logger.getEffectiveLevel() <= trace_logging_level
+            and isinstance(self.value, str)
+            and len(self.value) >= trace_logging_level
+        ):
+            return f"""{self.value[:1]}{'*' * 4}{self.value[-1:]}"""
         return '**********'
 
     @classmethod
@@ -118,7 +124,7 @@ class Sensitive:
     @classmethod
     def validate_type(cls, value: bytes | str | Self, field: ModelField) -> bytes | str | Self:
         """Raise exception if value is not a String type."""
-        if not isinstance(value, (bytes, str, Sensitive)):
+        if not isinstance(value, (bytes | str | Sensitive)):
             raise InvalidType(
                 field_name=field.name,
                 expected_types='(bytes, str)',
@@ -129,7 +135,7 @@ class Sensitive:
     @property
     def value(self) -> str:
         """Return the actual value."""
-        if not isinstance(self._sensitive_value, (BinaryVariable, bytes)):
+        if not isinstance(self._sensitive_value, (BinaryVariable | bytes)):
             # file variables can be used for client certs, json credential,
             # etc and the data is provided as a BinaryVariable object. This
             # is a special case where we need to return the value as a string.

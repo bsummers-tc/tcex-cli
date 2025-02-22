@@ -2,7 +2,7 @@
 
 # standard library
 import json
-import os
+from pathlib import Path
 
 # third-party
 from semantic_version import Version
@@ -66,16 +66,17 @@ class GenAppSpecYml(CliABC):
 
         feeds = []
         for feed in self.app.ij.model.feeds or []:
-            if not os.path.isfile(feed.job_file):
+            feed_job_file = Path(feed.job_file)
+            if not feed_job_file.is_file():
                 self.log.error(
                     f'feature=app-spec-yml, exception=failed-reading-file, filename={feed.job_file}'
                 )
                 continue
-            with open(feed.job_file, encoding='utf-8') as f:
+            with feed_job_file.open(encoding='utf-8') as f:
                 job = json.load(f)
-            feed = feed.dict(by_alias=True)
-            feed['job'] = job
-            feeds.append(feed)
+            feed_dict = feed.dict(by_alias=True)
+            feed_dict['job'] = job
+            feeds.append(feed_dict)
         app_spec_yml_data.setdefault('organization', {})
         app_spec_yml_data['organization']['feeds'] = feeds
 
@@ -94,13 +95,13 @@ class GenAppSpecYml(CliABC):
         if self.app.ij.model.is_organization_app:
             app_spec_yml_data.setdefault('organization', {})
             if self.app.ij.model.publish_out_files:
-                app_spec_yml_data['organization'][
-                    'publishOutFiles'
-                ] = self.app.ij.model.publish_out_files
+                app_spec_yml_data['organization']['publishOutFiles'] = (
+                    self.app.ij.model.publish_out_files
+                )
             if self.app.ij.model.repeating_minutes:
-                app_spec_yml_data['organization'][
-                    'repeatingMinutes'
-                ] = self.app.ij.model.repeating_minutes
+                app_spec_yml_data['organization']['repeatingMinutes'] = (
+                    self.app.ij.model.repeating_minutes
+                )
 
     def _add_output_data(self, app_spec_yml_data: dict):
         """Add asy.outputData."""
@@ -205,9 +206,8 @@ class GenAppSpecYml(CliABC):
         for section in self._current_data:
             for p in section.get('parameters', []):
                 param = self.app.ij.model.get_param(p['name'])
-                if param is not None:
-                    if param.type.lower() == 'editchoice':
-                        return True
+                if param is not None and param.type.lower() == 'editchoice':
+                    return True
         return False
 
     @staticmethod
@@ -235,9 +235,11 @@ class GenAppSpecYml(CliABC):
             'request.status_code',
             'request.url',
         ]:
-            if self.app.ij.model.playbook is not None:
-                if f'{self.app.ij.model.playbook.output_prefix}.{pattern}' == name:
-                    return True
+            if (
+                self.app.ij.model.playbook is not None
+                and f'{self.app.ij.model.playbook.output_prefix}.{pattern}' == name
+            ):
+                return True
         return False
 
     def _add_min_tc_version(self, app_spec_yml_data: dict):

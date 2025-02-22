@@ -10,8 +10,7 @@ from pathlib import Path
 # third-party
 import yaml
 from pydantic import ValidationError
-from requests import Response  # TYPE-CHECKING
-from requests import Session
+from requests import Response, Session
 from requests.auth import HTTPBasicAuth
 from tinydb import Query, TinyDB
 
@@ -67,8 +66,8 @@ class TemplateCli(CliABC):
         for error in json.loads(ex.json()):
             location = [str(location) for location in error.get('loc')]
             self.log.error(
-                '''Schema validation failed for template.yaml. '''
-                f'''({error.get('msg')}: {' -> '.join(location)})'''
+                """Schema validation failed for template.yaml. """
+                f"""({error.get('msg')}: {' -> '.join(location)})"""
             )
             self.errors = True
 
@@ -105,54 +104,56 @@ class TemplateCli(CliABC):
 
     def db_add_config(self, config: TemplateConfigModel):
         """Add a config to the DB."""
-        Config = Query()
+        config_query = Query()
         try:
             if config.name == '_app_common':
                 config.type = '_app_common'
             self.db.upsert(
                 json.loads(config.json()),
-                (Config.type == config.type) & (Config.name == config.name),
+                (config_query.type == config.type) & (config_query.name == config.name),
             )
-        except Exception as ex:
-            self.log.error(f'Failed inserting config in db ({ex}).')
+        except Exception:
+            self.log.exception('Failed inserting config in db.')
             self.errors = True
 
     def db_add_sha(self, sha: str):
         """Add a config to the DB."""
-        SHA = Query()
+        sha_query = Query()
         try:
-            self.db.upsert({'sha': sha}, SHA.sha.exists())
-        except Exception as ex:
-            self.log.error(f'Failed inserting config in db ({ex}).')
+            self.db.upsert({'sha': sha}, sha_query.sha.exists())
+        except Exception:
+            self.log.exception('Failed inserting config in db.')
             self.errors = True
 
     def db_get_config(self, template_type: str, template: str) -> TemplateConfigModel | None:
         """Get a config from the DB."""
-        Config = Query()
+        config = Query()
         try:
             if template == '_app_common':
                 template_type = '_app_common'
-            config = self.db.search((Config.type == template_type) & (Config.name == template))
+            config = self.db.search((config.type == template_type) & (config.name == template))
 
             if config:
                 return TemplateConfigModel(**config[0])
-            return None
-        except Exception as ex:
-            self.log.error(f'Failed retrieving config from db ({ex}).')
+        except Exception:
+            self.log.exception('Failed retrieving config from db.')
             self.errors = True
+            return None
+        else:
             return None
 
     def db_get_sha(self, sha: str) -> str | None:
         """Get repo SHA from the DB."""
-        SHA = Query()
+        sha_query = Query()
         try:
-            data = self.db.search(SHA.sha == sha)
+            data = self.db.search(sha_query.sha == sha)
             if data:
                 return data[0].get('sha')
-            return None
         except Exception:
             self.log.exception(f'action=db-get-sha, sha={sha}')
             self.errors = True
+            return None
+        else:
             return None
 
     def download_template_file(self, item: FileMetadataModel):
@@ -173,10 +174,11 @@ class TemplateCli(CliABC):
                 f'status_code={r.status_code}, headers={r.headers}, '
                 f'response={r.text or r.reason}'
             )
-            raise RuntimeError(
+            ex_msg = (
                 f'action=get-template-config, url={r.request.url}, status_code='
                 f'{r.status_code}, reason={r.reason}'
             )
+            raise RuntimeError(ex_msg)
 
         # get the relative path to the file and create the parent directory if it does not exist
         destination = item.relative_path
@@ -308,13 +310,14 @@ class TemplateCli(CliABC):
             # upsert db
             self.db_add_config(config)
             self.log.debug(f'action=get-template-config, config={config}')
-            return config
         except ValidationError as ex:
             self.log.exception(f'action=get-template-config, url={url}')
             Render.panel.warning(f'Could not parse template config file (url={url}).')
 
             self._log_validation_error(ex)
             return None
+        else:
+            return config
 
     def get_template_config_contents(self, branch: str, url: str) -> Response:
         """Return the contents of the template."""
@@ -369,7 +372,7 @@ class TemplateCli(CliABC):
                 self.template_manifest.setdefault(item.path, {})
                 self.template_manifest[item.path]['sha'] = item.sha
             elif item.type == 'dir':
-                nested_path = f'''{template_path}/{item.name}'''
+                nested_path = f"""{template_path}/{item.name}"""
                 self.get_template_contents(
                     branch, data, template_name, nested_path, template_type, app_builder
                 )
@@ -412,7 +415,8 @@ class TemplateCli(CliABC):
         template_types = self.template_types
         if template_type is not None:
             if template_type not in self.template_types:
-                raise ValueError(f'Invalid Types: {template_type}')
+                ex_msg = f'Invalid Types: {template_type}'
+                raise ValueError(ex_msg)
             template_types = [template_type]
 
         for selected_type in template_types:
@@ -430,7 +434,7 @@ class TemplateCli(CliABC):
                 try:
                     self.template_manifest = json.load(fh)
                 except json.JSONDecodeError:
-                    self.log.error(
+                    self.log.exception(
                         f'Failed loading template manifest: {self.template_manifest_fqfn}'
                     )
                     Render.panel.failure(
@@ -449,10 +453,11 @@ class TemplateCli(CliABC):
                 f'response={r.text or r.reason}'
             )
             self.errors = True
-            raise RuntimeError(
+            ex_msg = (
                 f'action=get-template-config, url={r.request.url}, status_code='
                 f'{r.status_code}, reason={r.reason}'
             )
+            raise RuntimeError(ex_msg)
 
         try:
             commits_data = r.json()
@@ -591,7 +596,9 @@ class TemplateCli(CliABC):
         # model, but in reality these fields are required.  This is a temporary fix to
         # allow App Builder to work with older Apps that do not have these fields set.
         for template_parent_name in self.template_parents(
-            self.app.tj.model.template_name, self.app.tj.model.template_type, branch  # type: ignore
+            self.app.tj.model.template_name,  # type: ignore
+            self.app.tj.model.template_type,  # type: ignore
+            branch,  # type: ignore
         ):
             # template_parent_name is both the name and the path
             self.get_template_contents(
@@ -600,17 +607,19 @@ class TemplateCli(CliABC):
                 template_parent_name,
                 template_parent_name,
                 self.app.tj.model.template_type,  # type: ignore
-                False,
+                app_builder=False,
             )
 
         # determine which files should be downloaded
         downloads = []
         for item in data.values():
             # skip files if it has not changed
-            if item.relative_path.is_file() and ignore_hash is False:
-                # skip files if it has not changed
-                if self.update_item_check_hash(item.relative_path, item) is False:
-                    continue
+            if (
+                item.relative_path.is_file()
+                and ignore_hash is False
+                and self.update_item_check_hash(item.relative_path, item) is False
+            ):
+                continue
 
             # is the file a template file and dev says overwrite
             if self.update_item_prompt(branch, item) and item.relative_path.is_file() is True:
@@ -632,7 +641,7 @@ class TemplateCli(CliABC):
         file_hash = self.file_hash(fqfn)
         if self.template_manifest.get(item.path, {}).get('md5') != file_hash:
             self.log.debug(
-                f'''action=update-check-hash, template-file={item.name}, '''
+                f"""action=update-check-hash, template-file={item.name}, """
                 'check=hash-check, result=hash-has-not-changed'
             )
             return True
@@ -641,7 +650,9 @@ class TemplateCli(CliABC):
     def update_item_prompt(self, branch: str, item: FileMetadataModel) -> bool:
         """Update the prompt value for the provided item."""
         template_config = self.get_template_config(
-            item.template_name, self.app.tj.model.template_type, branch  # type: ignore
+            item.template_name,
+            self.app.tj.model.template_type,  # type: ignore
+            branch,  # type: ignore
         )
 
         # enforce prompt if template config can't be found
@@ -649,9 +660,7 @@ class TemplateCli(CliABC):
             return True
 
         # determine if file requires user prompt
-        if str(item.relative_path) in (template_config.template_files or []):
-            return False
-        return True
+        return str(item.relative_path) in (template_config.template_files or [])
 
     def update_tcex_json(self):
         """Update the tcex.json file."""

@@ -76,10 +76,10 @@ class GenInstallJson(CliABC):
             if self.asy.model.organization.feeds:
                 _feeds = []
                 for feed in self.asy.model.organization.feeds:
-                    feed = feed.dict(by_alias=True)
-                    if feed.get('job') is not None:
-                        del feed['job']
-                    _feeds.append(feed)
+                    feed_dict = feed.dict(by_alias=True)
+                    if feed_dict.get('job') is not None:
+                        del feed_dict['job']
+                    _feeds.append(feed_dict)
                 install_json_data['feeds'] = _feeds
 
             # publish_out_files

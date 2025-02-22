@@ -25,7 +25,10 @@ class ValidationDataModel(BaseModel):
     """Model Definition"""
 
     errors: list[str] = Field([], description='List of errors.')
-    fileSyntax: list[ValidationItemModel] = Field([], description='List of file syntax errors.')
+    # TODO: @bsummers - can this be updated
+    fileSyntax: list[ValidationItemModel] = Field(  # noqa: N815
+        [], description='List of file syntax errors.'
+    )
     layouts: list[ValidationItemModel] = Field([], description='List of layout.json errors.')
     schema_: list[ValidationItemModel] = Field([], description='List of schema errors.')
     feeds: list[ValidationItemModel] = Field([], description='List of feeds errors.')

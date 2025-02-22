@@ -36,7 +36,7 @@ class LaunchServiceApi(LaunchServiceCommonABC):
         """Return a formatted key value pair."""
         key_value_ = ''
         for kv in key_value:
-            key_value_ += f'''{kv.get('name')}: [{self.accent}]{kv.get('value')}[/]\n'''
+            key_value_ += f'{kv.get("name")}: [{self.accent}]{kv.get("value")}[/]\n'
         return key_value_
 
     @cached_property
@@ -116,7 +116,7 @@ class LaunchServiceApi(LaunchServiceCommonABC):
                 table.add_row(
                     request.get('request_time'),
                     request.get('method'),
-                    f'''[{self.accent}]{request.get('path')}[/]''',
+                    f'[{self.accent}]{request.get("path")}[/]',
                     self._format_key_value(request.get('headers') or []),
                     self._format_key_value(request.get('query_params') or []),
                     request.get('request_key'),
@@ -145,7 +145,7 @@ class LaunchServiceApi(LaunchServiceCommonABC):
                 table.add_row(
                     request.get('response_time'),
                     request.get('status'),
-                    f'''[{self.accent}]{request.get('status_code')}[/]''',
+                    f'[{self.accent}]{request.get("status_code")}[/]',
                     self._format_key_value(request.get('headers') or []),
                     request.get('request_key'),
                 )
@@ -159,19 +159,20 @@ class LaunchServiceApi(LaunchServiceCommonABC):
             title_align='left',
         )
 
-    def process_client_channel(self, client, userdata, message):  # pylint: disable=unused-argument
+    def process_client_channel(self, client, userdata, message):  # noqa: ARG002
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)
         except ValueError as ex:
-            raise RuntimeError(f'Could not parse API service response JSON. ({message})') from ex
+            ex_msg = f'Could not parse API service response JSON. ({message})'
+            raise RuntimeError(ex_msg) from ex
 
         command = msg.get('command').lower()
         self.message_data.append(
             {
                 'channel': 'client',
                 'command': command,
-                'msg_time': datetime.datetime.now().isoformat(),
+                'msg_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 'type': msg.get('type'),
             }
         )
@@ -184,25 +185,26 @@ class LaunchServiceApi(LaunchServiceCommonABC):
                         'status': msg.get('status'),
                         'status_code': msg.get('statusCode'),
                         'request_key': msg.get('requestKey'),
-                        'response_time': datetime.datetime.now().isoformat(),
+                        'response_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     }
                 )
 
         self.event.set()
 
-    def process_server_channel(self, client, userdata, message):  # pylint: disable=unused-argument
+    def process_server_channel(self, client, userdata, message):  # noqa: ARG002
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)
         except ValueError as ex:
-            raise RuntimeError(f'Could not parse API service response JSON. ({message})') from ex
+            ex_msg = f'Could not parse API service response JSON. ({message})'
+            raise RuntimeError(ex_msg) from ex
 
         command = msg.get('command').lower()
         self.message_data.append(
             {
                 'channel': 'server',
                 'command': command,
-                'msg_time': datetime.datetime.now().isoformat(),
+                'msg_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 'type': msg.get('type'),
             }
         )
@@ -216,7 +218,7 @@ class LaunchServiceApi(LaunchServiceCommonABC):
                         'path': msg.get('path'),
                         'query_params': msg.get('queryParams'),
                         'request_key': msg.get('requestKey'),
-                        'request_time': datetime.datetime.now().isoformat(),
+                        'request_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     }
                 )
 

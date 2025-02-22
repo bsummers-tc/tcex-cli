@@ -77,11 +77,10 @@ class GenReadmeMd(CliABC):
         label = self._markdown_bold(param.label)
         type_data = f'{param.type}'
 
-        if param.required is False:
-            # change the format of the label name to italics if it is optional
-            if param.type.lower() not in ['boolean']:
-                label = self._markdown_italic_nested(label)
-                type_data += ', Optional'
+        # change the format of the label name to italics if it is optional
+        if param.required is False and param.type.lower() not in ['boolean']:
+            label = self._markdown_italic_nested(label)
+            type_data += ', Optional'
 
         if param.default is not None:
             # following current format where boolean values are shown as
@@ -90,7 +89,7 @@ class GenReadmeMd(CliABC):
                 default_value = 'Selected' if param.default is True else 'Unselected'
             else:
                 default_value = param.default
-            type_data += f''', Default: {str(default_value).replace('|', ', ')}'''
+            type_data += f""", Default: {str(default_value).replace('|', ', ')}"""
 
         type_data_formatted = self._markdown_italic(f'({type_data})')
         readme_md.append(f'{self.i1}{label} {type_data_formatted}')
@@ -106,9 +105,10 @@ class GenReadmeMd(CliABC):
             if param.name == 'tc_action':
                 continue
 
-            if action is not None:
-                if param.name not in self.app.permutation.get_action_input_names(action):
-                    continue
+            if action is not None and param.name not in self.app.permutation.get_action_input_names(
+                action
+            ):
+                continue
 
             # add param data
             self._add_param(readme_md, param)
@@ -133,7 +133,7 @@ class GenReadmeMd(CliABC):
         # matching current format where single 'String' is not displayed
         if param.playbook_data_type and param.playbook_data_type != ['String']:
             _pdt = ', '.join(param.playbook_data_type)
-            readme_md.append(f'''{self.i1}> {self._markdown_bold('Allows:')} {_pdt}''')
+            readme_md.append(f"""{self.i1}> {self._markdown_bold('Allows:')} {_pdt}""")
             readme_md.append('')
 
     def _add_param_valid_values(self, readme_md: list[str], param: ParamsModel):
@@ -143,7 +143,7 @@ class GenReadmeMd(CliABC):
         if valid_values:
             _valid_values = ', '.join(valid_values)
             readme_md.append(
-                f'''{self.i1}> {self._markdown_bold('Valid Values:')} {_valid_values}'''
+                f"""{self.i1}> {self._markdown_bold('Valid Values:')} {_valid_values}"""
             )
             readme_md.append('')
 
@@ -155,7 +155,7 @@ class GenReadmeMd(CliABC):
 
             if self.app.ij.model.playbook:
                 outputs = self.app.ij.model.playbook.output_variables
-                outputs = sorted(list(set(outputs)), key=lambda x: x.name)
+                outputs = sorted(set(outputs), key=lambda x: x.name)
                 if action:
                     outputs = self.app.permutation.get_action_outputs(action)
 
@@ -269,15 +269,12 @@ class GenReadmeMd(CliABC):
 
     def _has_section_params(self, section: SectionsModel, action: str) -> bool:
         """Return True if the provided section has params."""
-        if [
-            sp
-            for sp in section.params
-            if not any([sp.disabled, sp.hidden, sp.service_config])
+        return any(
+            not any([sp.disabled, sp.hidden, sp.service_config])
             and sp.name != 'tc_action'
-            and self._valid_param_for_action(sp, action) is True
-        ]:
-            return True
-        return False
+            and self._valid_param_for_action(sp, action)
+            for sp in section.params
+        )
 
     @staticmethod
     def _markdown_bold(string: str):

@@ -10,7 +10,7 @@ from tcex_cli.cli.run.model.playbook_common_model import PlaybookCommonModel
 from tcex_cli.cli.run.model.service_model import ServiceModel
 from tcex_cli.input.field_type.sensitive import Sensitive
 
-json_encoders = {Sensitive: lambda v: v.value}  # pylint: disable=unnecessary-lambda
+json_encoders = {Sensitive: lambda v: v.value}
 
 
 class AppApiServiceModel(CommonModel, PlaybookCommonModel, ServiceModel):

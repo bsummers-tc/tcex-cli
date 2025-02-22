@@ -15,7 +15,7 @@ def command(
     config_json: Path = typer.Option(
         'app_inputs.json', help='An OPTIONAL configuration file containing App Inputs.'
     ),
-    debug: bool = typer.Option(False, help='Run App in VS Code debug mode.'),
+    debug: bool = typer.Option(default=False, help='Run App in VS Code debug mode.'),
     debug_port: int = typer.Option(
         5678, help='The port to use for the debug server. This must match the launch.json file.'
     ),

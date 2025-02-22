@@ -31,7 +31,8 @@ class BaseStagger:
     def validate(self):
         """Validate the provided data."""
         if self.key is None or self.value is None:
-            raise RuntimeError(f'Invalid data provided, failed to stage {self.key}.')
+            ex_msg = f'Invalid data provided, failed to stage {self.key}.'
+            raise RuntimeError(ex_msg)
         self.validate_value()
 
     @staticmethod
@@ -39,8 +40,9 @@ class BaseStagger:
         """Return a serialized value."""
         try:
             return json.dumps(value)
-        except ValueError as e:  # pragma: no cover
-            raise RuntimeError(f'Invalid data provided, failed to serialize value ({e}).') from e
+        except ValueError as ex:  # pragma: no cover
+            ex_msg = f'Invalid data provided, failed to serialize value ({ex}).'
+            raise RuntimeError(ex_msg) from ex
 
     def validate_value(self):
         """Raise a RuntimeError if provided data is not valid."""
@@ -59,7 +61,7 @@ class BaseStagger:
             return str(value).lower()
 
         # coerce int to str type
-        if isinstance(value, (float, int, PosixPath)):
+        if isinstance(value, (float | int | PosixPath)):
             return str(value)
 
         if isinstance(value, Sensitive):
@@ -68,7 +70,8 @@ class BaseStagger:
         if isinstance(value, str):
             return value
 
-        raise RuntimeError(f'Invalid data provided, failed to coerce value ({value}).')
+        ex_msg = f'Invalid data provided, failed to coerce value ({value}).'
+        raise RuntimeError(ex_msg)
 
     def stage(self, kv_store, context):
         """Stage the provided value in the kvstore."""
@@ -86,9 +89,11 @@ class TCEntityStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a dict with the correct keys."""
         if not isinstance(self.value, dict):
-            raise RuntimeError('Invalid data provided for TCEntity.')
+            ex_msg = 'Invalid data provided for TCEntity.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
         if not all(x in self.value for x in TC_ENTITY_KEYS):
-            raise RuntimeError('Invalid data provided for TCEntity.')
+            ex_msg = 'Invalid data provided for TCEntity.'
+            raise RuntimeError(ex_msg)
 
 
 class TCEntityArrayStagger(BaseStagger):
@@ -97,13 +102,16 @@ class TCEntityArrayStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a list of TCEntity."""
         if not isinstance(self.value, list):
-            raise RuntimeError('Invalid data provided for TCEntityArray.')
+            ex_msg = 'Invalid data provided for TCEntityArray.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
         for value in self.value:
             if not isinstance(value, dict):
-                raise RuntimeError('Invalid data provided for TCEntity.')
+                ex_msg = 'Invalid data provided for TCEntity.'
+                raise RuntimeError(ex_msg)  # noqa: TRY004
             if not all(x in value for x in TC_ENTITY_KEYS):
-                raise RuntimeError('Invalid data provided for TCEntity.')
+                ex_msg = 'Invalid data provided for TCEntity.'
+                raise RuntimeError(ex_msg)
 
 
 class BinaryStagger(BaseStagger):
@@ -112,14 +120,14 @@ class BinaryStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not bytes."""
         if not isinstance(self.value, str):
-            raise RuntimeError('Invalid data provided for Binary.')
+            ex_msg = 'Invalid data provided for Binary.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
         try:
             base64.b64decode(self.value)
-        except Exception as e:
-            raise RuntimeError(
-                'Invalid data provided for Binary. Please ensure data is base64 encoded.'
-            ) from e
+        except Exception as ex:
+            ex_msg = 'Invalid data provided for Binary. Please ensure data is base64 encoded.'
+            raise RuntimeError(ex_msg) from ex
 
     def transform(self) -> str:
         """Return a string value from bytes."""
@@ -133,24 +141,27 @@ class BinaryArrayStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a list of bytes."""
         if not isinstance(self.value, list):
-            raise RuntimeError('Invalid data provided for BinaryArray.')
+            ex_msg = 'Invalid data provided for BinaryArray.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
         for value in self.value:
             if not isinstance(value, str):
-                raise RuntimeError('Invalid data provided for BinaryArray.')
+                ex_msg = 'Invalid data provided for BinaryArray.'
+                raise RuntimeError(ex_msg)  # noqa: TRY004
             try:
                 base64.b64decode(value)
-            except Exception as e:
-                raise RuntimeError(
+            except Exception as ex:
+                ex_msg = (
                     'Invalid data provided for BinaryArray. Please ensure data is base64 encoded.'
-                ) from e
+                )
+                raise RuntimeError(ex_msg) from ex
 
     def transform(self) -> list[str]:
         """Return a list of string values from a list bytes."""
         values = []
         for v in self.value:
-            v = base64.b64decode(v)  # type: ignore
-            values.append(base64.b64encode(v).decode('utf-8'))
+            v_ = base64.b64decode(v)  # type: ignore
+            values.append(base64.b64encode(v_).decode('utf-8'))
 
         return values
 
@@ -161,9 +172,11 @@ class KeyValueStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a dict with key and value."""
         if not isinstance(self.value, dict):
-            raise RuntimeError('Invalid data provided for KeyValue.')
+            ex_msg = 'Invalid data provided for KeyValue.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
         if not all(x in self.value for x in KEY_VALUE_KEYS):
-            raise RuntimeError('Invalid data provided for KeyValue.')
+            ex_msg = 'Invalid data provided for KeyValue.'
+            raise RuntimeError(ex_msg)
 
 
 class KeyValueArrayStagger(BaseStagger):
@@ -172,13 +185,16 @@ class KeyValueArrayStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a list of KeyValues."""
         if not isinstance(self.value, list):
-            raise RuntimeError('Invalid data provided for KeyValueArray.')
+            ex_msg = 'Invalid data provided for KeyValueArray.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
         for value in self.value:
             if not isinstance(value, dict):
-                raise RuntimeError('Invalid data provided for KeyValue.')
+                ex_msg = 'Invalid data provided for KeyValue.'
+                raise RuntimeError(ex_msg)  # noqa: TRY004
             if not all(x in value for x in KEY_VALUE_KEYS):
-                raise RuntimeError('Invalid data provided for KeyValue.')
+                ex_msg = 'Invalid data provided for KeyValue.'
+                raise RuntimeError(ex_msg)
 
 
 class StringStagger(BaseStagger):
@@ -190,8 +206,9 @@ class StringStagger(BaseStagger):
 
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a string."""
-        if not isinstance(self.value, (str, bool, float, int, PosixPath, Sensitive)):
-            raise RuntimeError('Invalid data provided for String.')
+        if not isinstance(self.value, (str | bool | float | int | PosixPath | Sensitive)):
+            ex_msg = 'Invalid data provided for String.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
 
 class StringArrayStagger(BaseStagger):
@@ -200,11 +217,13 @@ class StringArrayStagger(BaseStagger):
     def validate_value(self):
         """Raise a RuntimeError if provided data is not a list of strings."""
         if not isinstance(self.value, list):
-            raise RuntimeError('Invalid data provided for StringArray.')
+            ex_msg = 'Invalid data provided for StringArray.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
         for value in self.value:
-            if not isinstance(value, (str, bool, float, int, PosixPath, Sensitive)):
-                raise RuntimeError('Invalid data provided for String.')
+            if not isinstance(value, (str | bool | float | int | PosixPath | Sensitive)):
+                ex_msg = 'Invalid data provided for String.'
+                raise RuntimeError(ex_msg)  # noqa: TRY004
 
     def transform(self) -> list[str]:
         """Return a list of string values from a list of bool or int."""
@@ -221,7 +240,8 @@ class TCBatchStagger(BaseStagger):
             or not isinstance(self.value.get('indicator', []), list)
             or not isinstance(self.value.get('group', []), list)
         ):
-            raise RuntimeError('Invalid data provided for TCBatch.')
+            ex_msg = 'Invalid data provided for TCBatch.'
+            raise RuntimeError(ex_msg)  # noqa: TRY004
 
 
 class PlaybookCreate:
@@ -239,7 +259,8 @@ class PlaybookCreate:
     def get_data_type(key: str) -> str:
         """Return the data type for the provided key."""
         if not key or not isinstance(key, str) or key.count('!') != 1:
-            raise RuntimeError(f'Invalid key: {key} provided.')
+            ex_msg = f'Invalid key: {key} provided.'
+            raise RuntimeError(ex_msg)
 
         return key.split('!')[1].lower()
 

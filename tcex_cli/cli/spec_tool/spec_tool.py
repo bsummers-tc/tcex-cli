@@ -9,15 +9,19 @@ from tcex_cli.render.render import Render
 
 
 def command(
-    all_: bool = typer.Option(False, '--all', help='Generate all configuration files.'),
-    app_input: bool = typer.Option(False, help='Generate app_input.py.'),
-    app_spec: bool = typer.Option(False, help='Generate app_spec.yml.'),
-    install_json: bool = typer.Option(False, help='Generate install.json.'),
-    job_json: bool = typer.Option(False, help='Generate job.json.'),
-    layout_json: bool = typer.Option(False, help='Generate layout.json.'),
-    readme_md: bool = typer.Option(False, help='Generate README.md.'),
-    overwrite: bool = typer.Option(False, help='Force overwrite of config file.'),
-    tcex_json: bool = typer.Option(False, help='Generate tcex.json.'),
+    all_: bool = typer.Option(
+        False,  # noqa: FBT003
+        '--all',
+        help='Generate all configuration files.',
+    ),
+    app_input: bool = typer.Option(default=False, help='Generate app_input.py.'),
+    app_spec: bool = typer.Option(default=False, help='Generate app_spec.yml.'),
+    install_json: bool = typer.Option(default=False, help='Generate install.json.'),
+    job_json: bool = typer.Option(default=False, help='Generate job.json.'),
+    layout_json: bool = typer.Option(default=False, help='Generate layout.json.'),
+    readme_md: bool = typer.Option(default=False, help='Generate README.md.'),
+    overwrite: bool = typer.Option(default=False, help='Force overwrite of config file.'),
+    tcex_json: bool = typer.Option(default=False, help='Generate tcex.json.'),
 ):
     """Generate App configuration file.
 

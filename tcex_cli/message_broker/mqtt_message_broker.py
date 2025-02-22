@@ -10,9 +10,10 @@ from collections.abc import Callable
 # third-party
 import paho.mqtt.client as mqtt
 
-from ..input.field_type.sensitive import Sensitive
-from ..logger.trace_logger import TraceLogger
-from ..pleb.cached_property import cached_property
+# first-party
+from tcex_cli.input.field_type.sensitive import Sensitive
+from tcex_cli.logger.trace_logger import TraceLogger
+from tcex_cli.pleb.cached_property import cached_property
 
 # get tcex logger
 _logger: TraceLogger = logging.getLogger(__name__.split('.', maxsplit=1)[0])  # type: ignore
@@ -145,17 +146,16 @@ class MqttMessageBroker:
                     cert_reqs=ssl.CERT_REQUIRED,
                     tls_version=ssl.PROTOCOL_TLSv1_2,
                 )
-                _client.tls_insecure_set(False)
+                _client.tls_insecure_set(value=False)
             # add logger when logging in TRACE
-            if self.log.getEffectiveLevel() == 5:
+            if self.log.getEffectiveLevel() == 5:  # noqa: PLR2004
                 _client.enable_logger(logger=self.log)
             # username must be a empty string
             if self.broker_token is not None:
                 _client.username_pw_set('', password=self.broker_token.value)
 
-        except Exception as e:
-            self.log.error(f'feature=message-broker, event=failed-connection, error="""{e}"""')
-            self.log.trace(traceback.format_exc())
+        except Exception:
+            self.log.exception('feature=message-broker, event=failed-connection')
             self.shutdown = True
 
         return _client
@@ -170,27 +170,28 @@ class MqttMessageBroker:
             while True:
                 if not self._connected and deadline < time.time():
                     self.client.loop_stop()
-                    raise ConnectionError(
+                    ex_msg = (
                         f'failed to connect to message broker host '
                         f'{self.broker_host} on port '
                         f'{self.broker_port}.'
                     )
+                    raise ConnectionError(ex_msg)  # noqa: TRY301
                 time.sleep(1)
 
-        except Exception as e:
-            self.log.trace(f'feature=message-broker, event=connection-error, error="""{e}"""')
-            self.log.error(traceback.format_exc())
+        except Exception as ex:
+            self.log.trace(f'feature=message-broker, event=connection-error, error="""{ex}"""')
+            self.log.error(traceback.format_exc())  # noqa: TRY400
 
     def on_connect(self, client, userdata, flags, rc):
         """Handle MQTT on_connect events."""
-        self.log.info(f'feature=message-broker, event=broker-connect, status={str(rc)}')
+        self.log.info(f'feature=message-broker, event=broker-connect, status={rc!r}')
         self._connected = True
         for callback in self._on_connect_callbacks:
             callback(client, userdata, flags, rc)
 
     def on_disconnect(self, client, userdata, rc):
         """Handle MQTT on_disconnect events."""
-        self.log.info(f'feature=message-broker, event=broker-disconnect, status={str(rc)}')
+        self.log.info(f'feature=message-broker, event=broker-disconnect, status={rc!r}')
         for callback in self._on_disconnect_callbacks:
             callback(client, userdata, rc)
 
@@ -204,13 +205,12 @@ class MqttMessageBroker:
         """Handle MQTT on_message events."""
         mp = message.payload.decode().replace('\n', '')
         self.log.trace(
-            f'''feature=message-broker, message-topic={message.topic}, message-payload={mp}'''
+            f"""feature=message-broker, message-topic={message.topic}, message-payload={mp}"""
         )
         for cd in self._on_message_callbacks:
             topics = cd.get('topics')
-            if topics is None or message.topic in topics:
-                if callable(cd['callback']):
-                    cd['callback'](client, userdata, message)
+            if (topics is None or message.topic in topics) and callable(cd['callback']):
+                cd['callback'](client, userdata, message)
 
     def on_publish(self, client, userdata, result):
         """Handle MQTT on_publish events."""

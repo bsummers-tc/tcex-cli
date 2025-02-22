@@ -10,10 +10,10 @@ from tcex_cli.render.render import Render
 
 def command(
     app_builder: bool = typer.Option(
-        False, help='(Advanced) If true, this command was run from App Builder.'
+        default=False, help='(Advanced) If true, this command was run from App Builder.'
     ),
     ignore_validation: bool = typer.Option(
-        False, help='If true, validation errors will not cause an exit.'
+        default=False, help='If true, validation errors will not cause an exit.'
     ),
 ):
     """Run validation of the current App.
