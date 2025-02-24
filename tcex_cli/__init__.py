@@ -2,7 +2,6 @@
 
 # standard library
 import logging
-import os
 from pathlib import Path
 
 # first-party
@@ -13,7 +12,7 @@ from tcex_cli.logger.trace_logger import TraceLogger
 
 def cli_out_path() -> Path:
     """Return the path to the tcex cli command out directory."""
-    _out_path = Path(os.path.expanduser('~/.tcex'))
+    _out_path = Path(Path.expanduser(Path('~/.tcex')))
     _out_path.mkdir(exist_ok=True, parents=True)
     return _out_path
 
@@ -46,7 +45,8 @@ def initialize_logger():
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)'
     )
-    if logging_level < 10:
+    trace_logging_level = 10
+    if logging_level < trace_logging_level:
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
             '(%(filename)s:%(funcName)s:%(lineno)d:%(threadName)s)'

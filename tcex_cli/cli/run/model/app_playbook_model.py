@@ -2,6 +2,7 @@
 
 # standard library
 from pathlib import PosixPath
+from typing import ClassVar
 
 # third-party
 from pydantic import Extra
@@ -27,7 +28,7 @@ class AppPlaybookModel(CommonModel, PlaybookCommonModel, PlaybookModel):
         case_sensitive = False
         env_file = '.env'
         env_file_encoding = 'utf-8'
-        json_encoders = {PosixPath: lambda v: str(v), Sensitive: lambda v: v.value}
+        json_encoders: ClassVar = {PosixPath: lambda v: str(v), Sensitive: lambda v: v.value}
         validate_assignment = True
 
 

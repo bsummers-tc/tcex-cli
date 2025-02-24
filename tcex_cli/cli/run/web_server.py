@@ -58,12 +58,13 @@ class WebServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         service = Thread(group=None, target=self.run, name='SimpleServerThread', daemon=True)
         service.start()
 
-    def on_message(self, client: mqtt.Client, userdata, message):  # pylint: disable=unused-argument
+    def on_message(self, client: mqtt.Client, userdata, message):  # noqa: ARG002
         """Handle message broker on_message events."""
         try:
             msg = json.loads(message.payload)
         except ValueError as ex:
-            raise RuntimeError(f'Could not parse API service response JSON. ({message})') from ex
+            ex_msg = f'Could not parse API service response JSON. ({message})'
+            raise RuntimeError(ex_msg) from ex
 
         # only process RunService Acknowledged commands.
         ack_type = (msg.get('type') or '').lower()

@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.0.5
+
+-   APP-4732 - [PACKAGE] Fixed dependency issue with python-dotenv
+-   APP-4733 - [PACKAGE] Migrated to "uv" for package management
+-   APP-4734 - [PACKAGE] Switched linters to "ruff" (including linting fixes)
+
 ## 1.0.4
 
 -   APP-4563 - [SPEC-TOOL] Added Minimum Server Version to the README.md

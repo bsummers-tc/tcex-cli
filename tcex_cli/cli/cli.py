@@ -1,6 +1,7 @@
 """TcEx Framework Module"""
 
 # standard library
+import contextlib
 import sys
 from importlib.metadata import version as get_version
 from pathlib import Path
@@ -33,7 +34,6 @@ def add_test_command():
         update_system_path()
 
         # third-party
-        # pylint: disable=import-outside-toplevel
         from tcex_app_testing.cli.cli import app as app_test  # type: ignore
 
         app.add_typer(
@@ -54,7 +54,11 @@ def update_system_path():
 
 
 def version_callback(
-    version: bool = typer.Option(False, '--version', help='Display the version and exit.')
+    version: bool = typer.Option(
+        False,  # noqa: FBT003
+        '--version',
+        help='Display the version and exit.',
+    ),
 ):
     """Display the version and exit."""
     if version is True:
@@ -63,22 +67,18 @@ def version_callback(
 
         version_data = {}
         # display the tcex version
-        try:
+        with contextlib.suppress(ImportError):
             version_data['TcEx'] = get_version('tcex')
-        except ImportError:
-            pass
 
         # display the tcex version
-        try:
+        with contextlib.suppress(ImportError):
             version_data['TcEx App Testing'] = get_version('tcex-app-testing')
-        except ImportError:
-            pass
 
         # display the tcex version
         version_data['TcEx CLI'] = get_version('tcex-cli')
 
         Render.table.key_value('Version Data', version_data)
-        raise typer.Exit()
+        raise typer.Exit()  # noqa: RSE102
 
     # show a warning if using a build or pre-release version of TcEx Framework
     try:

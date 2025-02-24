@@ -74,7 +74,7 @@ class RequestHandlerWebhook(http.server.BaseHTTPRequestHandler):
         if body is not None:
             self.wfile.write(body)  # type: ignore
 
-    def call_service(self, method: str):  # pylint: disable=useless-return
+    def call_service(self, method: str):
         """Call the API Service
 
         Args:
@@ -101,20 +101,20 @@ class RequestHandlerWebhook(http.server.BaseHTTPRequestHandler):
         else:
             self._build_response_marshall(response=response)
 
-        return
+        return  # noqa: PLR1711
 
-    def do_DELETE(self):
+    def do_DELETE(self):  # noqa: N802
         """Handle DELETE method."""
         return self.call_service('DELETE')
 
-    def do_GET(self):
+    def do_GET(self):  # noqa: N802
         """Handle GET method."""
         return self.call_service('GET')
 
-    def do_PATCH(self):
+    def do_PATCH(self):  # noqa: N802
         """Handle PATCH method."""
         return self.call_service('PATCH')
 
-    def do_POST(self):
+    def do_POST(self):  # noqa: N802
         """Handle POST method."""
         return self.call_service('POST')

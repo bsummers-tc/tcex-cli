@@ -57,15 +57,15 @@ class RunCli(CliABC):
     def debug(self, debug_port: int):
         """Run the App in debug mode."""
         # third-party
-        import debugpy  # pylint: disable=import-outside-toplevel
+        import debugpy  # noqa: T100
 
         Render.panel.info(
             f'Waiting for debugger to attach to port: [{self.accent}]{debug_port}[/{self.accent}].',
             title='[blue]Debug[/blue]',
         )
 
-        debugpy.listen(debug_port)
-        debugpy.wait_for_client()
+        debugpy.listen(debug_port)  # noqa: T100
+        debugpy.wait_for_client()  # noqa: T100
 
     def exit_cli(self, exit_code):
         """Exit the CLI command."""

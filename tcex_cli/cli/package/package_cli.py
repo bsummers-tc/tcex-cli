@@ -5,7 +5,7 @@ import fnmatch
 import json
 import os
 import shutil
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 # first-party
@@ -115,11 +115,11 @@ class PackageCli(CliABC):
         """Ignore exclude files in shutil.copytree (callback)."""
         exclude_list = self._build_excludes_glob + self._build_excludes_base
 
-        cwd = os.getcwd() + os.sep
+        cwd = str(Path.cwd()) + os.sep
         ignored_names = set()
         for name in names:
             for pattern in exclude_list:
-                n = os.path.join(src, name)
+                n = os.path.join(src, name)  # noqa: PTH118
                 n = n.replace(cwd, '')
                 if fnmatch.fnmatch(n, pattern):
                     ignored_names.add(name)
@@ -131,7 +131,7 @@ class PackageCli(CliABC):
 
     def interactive_output(self):
         """[App Builder] Print JSON output containing results of the package command."""
-        print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     'package_data': self.app_metadata.dict(),
@@ -187,12 +187,12 @@ class PackageCli(CliABC):
         shutil.rmtree(app_path_fqpn)
 
         # create app metadata for output
-        runtime = datetime.now() - self.start_time
+        runtime = datetime.now(UTC) - self.start_time
         self.app_metadata = AppMetadataModel(
             features=', '.join(ij_template.model.features),
             name=self.app.tj.model.package.app_name,
             package_name=package_name,
-            package_size=f'{round(os.path.getsize(package_name) / 1024 / 1024, 2)} MB',
+            package_size=f'{round(Path(package_name).stat().st_size / 1024 / 1024, 2)} MB',
             package_time=f'{round(runtime.seconds, 2)} seconds',
             template_directory=self.template_fqpn.name,
             version=str(self.app.ij.model.program_version),

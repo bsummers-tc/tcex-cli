@@ -15,8 +15,8 @@ class RotatingFileHandlerCustom(RotatingFileHandler):
         self,
         filename: Path | str,
         mode: str = 'a',
-        maxBytes: int = 0,
-        backupCount: int = 0,
+        maxBytes: int = 0,  # noqa: N803
+        backupCount: int = 0,  # noqa: N803
         encoding: str | None = None,
         delay: bool = False,
     ):
@@ -32,7 +32,7 @@ class RotatingFileHandlerCustom(RotatingFileHandler):
         """
         if encoding is None and os.getenv('LANG') is None:
             encoding = 'UTF-8'
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
         RotatingFileHandler.__init__(self, filename, mode, maxBytes, backupCount, encoding, delay)
 
         # set namer
@@ -56,7 +56,8 @@ class RotatingFileHandlerCustom(RotatingFileHandler):
             source: The source filename.
             dest: The destination filename.
         """
-        with open(source, 'rb') as f_in:
-            with gzip.open(dest, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        os.remove(source)
+        dest_file = Path(dest)
+        source_file = Path(source)
+        with source_file.open(mode='rb') as f_in, gzip.open(dest_file, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+        source_file.unlink()

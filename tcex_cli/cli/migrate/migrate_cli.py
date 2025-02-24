@@ -33,14 +33,14 @@ class MigrateCli(CliABC):
         file_changed = False
         new_file = []
         for line_no, line in enumerate(filename.open(mode='r', encoding='utf-8'), start=1):
-            line = line.rstrip('\n')
-            if string in line:
+            line_ = line.rstrip('\n')
+            if string in line_:
                 Render.table.key_value(
                     'Replace Code',
                     {
                         'File Link': f'{filename}:{line_no}',
-                        'Current Line': f'{line}',
-                        'New Line': f'{line.replace(string, replacement)}',
+                        'Current Line': f'{line_}',
+                        'New Line': f'{line_.replace(string, replacement)}',
                     },
                 )
                 response = Render.prompt.input(
@@ -48,9 +48,9 @@ class MigrateCli(CliABC):
                     prompt_default=f' (Default: [{self.accent}]yes[/{self.accent}])',
                 )
                 if response in ('', 'y', 'yes'):
-                    line = line.replace(string, replacement)
+                    line_ = line_.replace(string, replacement)
                     file_changed = True
-            new_file.append(line)
+            new_file.append(line_)
 
         if file_changed is True:
             with filename.open(mode='w', encoding='utf-8') as fh:
@@ -60,6 +60,7 @@ class MigrateCli(CliABC):
     def _skip_directories(self):
         return [
             '.history',
+            '.venv',
             'deps',
             'deps_tests',
             'target',
@@ -274,7 +275,7 @@ class MigrateCli(CliABC):
                 # _logger.debug(f'Forward Ref: {arg.annotation.value}')
                 self._replace_string(
                     filename,
-                    f'\'{annotation.value}\'',
+                    f"'{annotation.value}'",
                     annotation.value,
                 )
 
@@ -313,9 +314,8 @@ class MigrateCli(CliABC):
 
                 case ast.If():
                     # _logger.debug('Found If')
-                    if isinstance(item.test, ast.Name):
-                        if item.test.id == 'TYPE_CHECKING':
-                            self.parse_ast_body(filename, item.body, imports_, True)
+                    if isinstance(item.test, ast.Name) and item.test.id == 'TYPE_CHECKING':
+                        self.parse_ast_body(filename, item.body, imports_, in_typing_imports=True)
 
                 case ast.Name():
                     pass
@@ -349,7 +349,7 @@ class MigrateCli(CliABC):
                             pass
 
                     # parse nested data
-                    self.parse_ast_body(filename, item.body, imports_, True)
+                    self.parse_ast_body(filename, item.body, imports_, in_typing_imports=True)
 
                 case ast.Try():
                     pass
@@ -368,21 +368,21 @@ class MigrateCli(CliABC):
         file_changed = False
         new_file = []
         for line_no, line in enumerate(filename.open(mode='r', encoding='utf-8'), start=1):
-            line = line.rstrip('\n')
+            line_ = line.rstrip('\n')
 
             for pattern, data in self._code_replacements.items():
                 match_pattern = re.compile(pattern)
-                match_data = list(match_pattern.finditer(line))
+                match_data = list(match_pattern.finditer(line_))
                 in_file = data.get('in_file') or []
                 if match_data and (not in_file or filename.name in in_file):
-                    match_data = list(match_data)[0]
-                    new_line = re.sub(pattern, data['replacement'], line)
+                    match_data = next(iter(match_data))
+                    new_line = re.sub(pattern, data['replacement'], line_)
 
                     Render.table.key_value(
                         'Replace Code',
                         {
                             'File Link': f'{filename}:{line_no}:{match_data.start() + 1}',
-                            'Current Line': f'{line}',
+                            'Current Line': f'{line_}',
                             'New Line': f'{new_line}',
                         },
                     )
@@ -391,10 +391,10 @@ class MigrateCli(CliABC):
                         prompt_default=f' (Default: [{self.accent}]yes[/{self.accent}])',
                     )
                     if response in ('', 'y', 'yes'):
-                        line = re.sub(pattern, data['replacement'], line)
+                        line_ = re.sub(pattern, data['replacement'], line_)
                         file_changed = True
 
-            new_file.append(line)
+            new_file.append(line_)
 
         if file_changed is True:
             with filename.open(mode='w', encoding='utf-8') as fh:

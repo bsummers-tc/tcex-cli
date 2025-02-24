@@ -1,6 +1,8 @@
 """TcEx Framework Module"""
 
-# pylint: disable=no-self-argument
+# standard library
+from typing import ClassVar
+
 # third-party
 from pydantic import BaseModel, validator
 from semantic_version import Version
@@ -19,6 +21,7 @@ class TemplateConfigModel(BaseModel):
     version: Version
 
     @validator('version', pre=True)
+    @classmethod
     def version_validator(cls, v):
         """Return a version object for "version" fields."""
         if v is not None:
@@ -29,7 +32,7 @@ class TemplateConfigModel(BaseModel):
         """DataModel Config"""
 
         arbitrary_types_allowed = True
-        json_encoders = {Version: lambda v: str(v)}  # pylint: disable=unnecessary-lambda
+        json_encoders: ClassVar = {Version: lambda v: str(v)}
         validate_assignment = True
 
     @property

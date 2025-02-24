@@ -1,7 +1,7 @@
 """TcEx Framework Module"""
 
 # standard library
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -18,22 +18,22 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
-    app_builder: bool = typer.Option(  # pylint: disable=unused-argument
-        False, help='(Advanced) If true, this command was run from App Builder.'
+    app_builder: bool = typer.Option(  # noqa: ARG001
+        default=False, help='(Advanced) If true, this command was run from App Builder.'
     ),
     excludes: str = typer.Option(
         '', help='File and directories to exclude from build in a comma-separated list.'
     ),
     ignore_validation: bool = typer.Option(
-        False, help='If true, validation errors will not prevent package.'
+        default=False, help='If true, validation errors will not prevent package.'
     ),
     json_output: bool = typer.Option(
-        False, help='If true, the output of the validation will be returned in JSON format.'
+        default=False, help='If true, the output of the validation will be returned in JSON format.'
     ),
     output_dir: Path = typer.Option(
         'target', help='(Advanced) Directory name (relative to App) to write the App package.'
@@ -46,7 +46,7 @@ def command(
     """
     excludes_ = [e.strip() for e in excludes.split(',') if e]
 
-    start_time = datetime.now()
+    start_time = datetime.now(UTC)
 
     cli_v = ValidateCli(ignore_validation)
     try:
@@ -72,7 +72,7 @@ def command(
         if not json_output:
             _table_validation_summary()
         if cli_v.exit_code != 0:
-            raise typer.Exit(code=cli_v.exit_code)
+            raise typer.Exit(code=cli_v.exit_code)  # noqa: TRY301
 
         # package App
         run = PackageCli(excludes_, ignore_validation, output_dir)

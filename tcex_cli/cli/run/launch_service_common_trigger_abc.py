@@ -42,10 +42,10 @@ class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
                 if 'tc_playbook_out_variables' in inputs_modified:
                     del inputs_modified['tc_playbook_out_variables']
 
-                trigger_id = str(trigger_id)
-                output = self.trigger_outputs.get(trigger_id)
+                trigger_id_ = str(trigger_id)
+                output = self.trigger_outputs.get(trigger_id_)
                 table.add_row(
-                    trigger_id,
+                    trigger_id_,
                     self.live_format_dict(inputs_modified),
                     self.live_format_dict(output),
                 )
@@ -59,19 +59,20 @@ class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
             title_align='left',
         )
 
-    def process_client_channel(self, client, userdata, message):  # pylint: disable=unused-argument
+    def process_client_channel(self, client, userdata, message):  # noqa: ARG002
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)
         except ValueError as ex:
-            raise RuntimeError(f'Could not parse API service response JSON. ({message})') from ex
+            ex_msg = f'Could not parse API service response JSON. ({message})'
+            raise RuntimeError(ex_msg) from ex
 
         command = msg.get('command').lower()
         self.message_data.append(
             {
                 'channel': 'client',
                 'command': command,
-                'msg_time': datetime.datetime.now().isoformat(),
+                'msg_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 'trigger_id': msg.get('triggerId'),
                 'type': msg.get('type'),
             }
@@ -88,19 +89,20 @@ class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
 
         self.event.set()
 
-    def process_server_channel(self, client, userdata, message):  # pylint: disable=unused-argument
+    def process_server_channel(self, client, userdata, message):  # noqa: ARG002
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)
         except ValueError as ex:
-            raise RuntimeError(f'Could not parse API service response JSON. ({message})') from ex
+            ex_msg = f'Could not parse API service response JSON. ({message})'
+            raise RuntimeError(ex_msg) from ex
 
         command = msg.get('command').lower()
         self.message_data.append(
             {
                 'channel': 'server',
                 'command': command,
-                'msg_time': datetime.datetime.now().isoformat(),
+                'msg_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 'trigger_id': msg.get('triggerId'),
                 'type': msg.get('type'),
             }

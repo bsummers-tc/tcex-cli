@@ -12,8 +12,8 @@ from tcex_cli.render.render import Render
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
@@ -22,9 +22,11 @@ def command(
         envvar='TC_DEPLOY_SERVER',
         help='Can be defined as an environment variable to avoid passing in each time.',
     ),
-    allow_all_orgs: bool = typer.Option(True, help='If true all orgs are able to use the App.'),
+    allow_all_orgs: bool = typer.Option(
+        default=True, help='If true all orgs are able to use the App.'
+    ),
     allow_distribution: bool = typer.Option(
-        True, help='If true the App is allowed to be distributed.'
+        default=True, help='If true the App is allowed to be distributed.'
     ),
     app_file: StrOrNone = typer.Option(
         None,
@@ -35,7 +37,7 @@ def command(
     proxy_user: StrOrNone = typer.Option(None, help='(Advanced) Username for the proxy server.'),
     proxy_pass: StrOrNone = typer.Option(None, help='(Advanced) Password for the proxy server.'),
 ):
-    """CLI command for deploying Apps to ThreatConnect Exchange.
+    r"""CLI command for deploying Apps to ThreatConnect Exchange.
 
     This command REQUIRES the following environment variables to be set.\n\n\n
     * TC_API_ACCESS_ID\n

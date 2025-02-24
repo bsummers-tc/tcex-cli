@@ -9,7 +9,7 @@ from tcex_cli.cli.run.model.common_model import CommonModel
 from tcex_cli.cli.run.model.organization_model import OrganizationModel
 from tcex_cli.input.field_type.sensitive import Sensitive
 
-json_encoders = {Sensitive: lambda v: v.value}  # pylint: disable=unnecessary-lambda
+json_encoders = {Sensitive: lambda v: v.value}
 
 
 class AppOrganizationModel(CommonModel, OrganizationModel):

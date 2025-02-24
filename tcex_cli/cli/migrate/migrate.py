@@ -12,15 +12,15 @@ from tcex_cli.render.render import Render
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
     forward_ref: bool = typer.Option(
-        True, help='If true, show typing forward lookup reference that require updates.'
+        default=True, help='If true, show typing forward lookup reference that require updates.'
     ),
-    update_code: bool = typer.Option(True, help='If true, apply code replacements.'),
+    update_code: bool = typer.Option(default=True, help='If true, apply code replacements.'),
 ):
     """Migrate App to TcEx 4 from TcEx 2/3."""
     cli = MigrateCli(

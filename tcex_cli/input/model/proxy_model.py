@@ -3,7 +3,8 @@
 # third-party
 from pydantic import BaseModel, Field
 
-from ..field_type.sensitive import Sensitive
+# first-party
+from tcex_cli.input.field_type.sensitive import Sensitive
 
 
 class ProxyModel(BaseModel):
@@ -38,12 +39,12 @@ class ProxyModel(BaseModel):
         inclusion_reason='runtimeLevel',
     )
     tc_proxy_external: bool = Field(
-        False,
+        default=False,
         description='Flag to enable proxy for external connections.',
         inclusion_reason='runtimeLevel',
     )
     tc_proxy_tc: bool = Field(
-        False,
+        default=False,
         description='Flag to enable proxy for ThreatConnect connection.',
         inclusion_reason='runtimeLevel',
     )

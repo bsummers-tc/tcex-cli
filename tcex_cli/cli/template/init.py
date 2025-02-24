@@ -16,8 +16,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
@@ -27,20 +27,24 @@ def command(
     template_type: str = typer.Option(
         ..., '--type', help='The App type being initialized.', prompt=True
     ),
-    clear: bool = typer.Option(False, help='Clear stored template cache in ~/.tcex/ directory.'),
-    force: bool = typer.Option(False, help='Force App init even if files exist in directory.'),
+    clear: bool = typer.Option(
+        default=False, help='Clear stored template cache in ~/.tcex/ directory.'
+    ),
+    force: bool = typer.Option(
+        default=False, help='Force App init even if files exist in directory.'
+    ),
     branch: str = typer.Option(
         default_branch, help='The git branch of the tcex-app-template repository to use.'
     ),
     app_builder: bool = typer.Option(
-        False, help='Include .appbuilderconfig file in template download.'
+        default=False, help='Include .appbuilderconfig file in template download.'
     ),
     proxy_host: StrOrNone = typer.Option(None, help='(Advanced) Hostname for the proxy server.'),
     proxy_port: IntOrNone = typer.Option(None, help='(Advanced) Port number for the proxy server.'),
     proxy_user: StrOrNone = typer.Option(None, help='(Advanced) Username for the proxy server.'),
     proxy_pass: StrOrNone = typer.Option(None, help='(Advanced) Password for the proxy server.'),
 ):
-    """Initialize a new App from a template.
+    r"""Initialize a new App from a template.
 
     Templates can be found at: https://github.com/ThreatConnect-Inc/tcex-app-templates
 

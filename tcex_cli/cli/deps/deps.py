@@ -15,13 +15,13 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]
-StrOrNone = Optional[str]
+IntOrNone = Optional[int]  # noqa: UP007
+StrOrNone = Optional[str]  # noqa: UP007
 
 
 def command(
     app_builder: bool = typer.Option(
-        False, help='(Advanced) If true, this command was run from App Builder.'
+        default=False, help='(Advanced) If true, this command was run from App Builder.'
     ),
     branch: str = typer.Option(
         default_branch,
@@ -30,8 +30,8 @@ def command(
             'This override what is in the requirements.txt file.'
         ),
     ),
-    no_cache_dir: bool = typer.Option(False, help='Do not use pip cache directory.'),
-    pre: bool = typer.Option(False, help='Install pre-release packages.'),
+    no_cache_dir: bool = typer.Option(default=False, help='Do not use pip cache directory.'),
+    pre: bool = typer.Option(default=False, help='Install pre-release packages.'),
     proxy_host: StrOrNone = typer.Option(None, help='(Advanced) Hostname for the proxy server.'),
     proxy_port: IntOrNone = typer.Option(None, help='(Advanced) Port number for the proxy server.'),
     proxy_user: StrOrNone = typer.Option(None, help='(Advanced) Username for the proxy server.'),

@@ -1,6 +1,7 @@
 """TcEx Framework Module"""
 
 # standard library
+import contextlib
 import logging
 import os
 import shutil
@@ -139,9 +140,10 @@ class DepsCli(CliABC):
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                return True
             except subprocess.CalledProcessError:
                 return False
+            else:
+                return True
         return False
 
     def _remove_previous(self, path: Path):
@@ -196,7 +198,7 @@ class DepsCli(CliABC):
     def download_deps(self, exe_command: list[str]):
         """Download the dependencies (run pip)."""
         # recommended -> https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
-        p = subprocess.Popen(  # pylint: disable=consider-using-with
+        p = subprocess.Popen(
             exe_command,
             shell=False,  # nosec
             # stdin=subprocess.PIPE,
@@ -204,7 +206,7 @@ class DepsCli(CliABC):
             stderr=subprocess.PIPE,
             env=self.env,
         )
-        _, err = p.communicate()  # pylint: disable=unused-variable
+        _, err = p.communicate()
 
         if p.returncode != 0:
             # display error
@@ -228,7 +230,7 @@ class DepsCli(CliABC):
         exe_command = self._build_command(self.deps_dir, self.requirements_fqfn)
 
         # display command setting
-        self.output.append(KeyValueModel(key='Pip Command', value=f'''{' '.join(exe_command)}'''))
+        self.output.append(KeyValueModel(key='Pip Command', value=f'{" ".join(exe_command)}'))
 
         if self.app_builder is False:
             with Render.progress_bar_deps() as progress:
@@ -264,11 +266,8 @@ class DepsCli(CliABC):
             lib_version.symlink_to(self.deps_dir, target_is_directory=True)
 
         # display tcex version
-        try:
+        with contextlib.suppress(Exception):
             self.output.append(KeyValueModel(key='App TcEx Version', value=get_version('tcex')))
-        except Exception:  # nosec
-            # best effort to log tcex version
-            pass
 
     def install_deps_tests(self):
         """Install tests dependencies."""
@@ -283,7 +282,7 @@ class DepsCli(CliABC):
 
             # display command setting
             self.output.append(
-                KeyValueModel(key='Tests Pip Command', value=f'''{' '.join(exe_command)}''')
+                KeyValueModel(key='Tests Pip Command', value=f'{" ".join(exe_command)}')
             )
 
             if self.app_builder is False:
@@ -328,7 +327,7 @@ class DepsCli(CliABC):
         self.output.append(
             KeyValueModel(
                 key='Requirement File',
-                value=f'[{self.accent}]{str(relative_path)}[/{self.accent}]',
+                value=f'[{self.accent}]{relative_path}[/{self.accent}]',
             )
         )
         return _requirements_file
@@ -351,7 +350,7 @@ class DepsCli(CliABC):
         self.output.append(
             KeyValueModel(
                 key='Tests Requirement File',
-                value=f'[{self.accent}]{str(relative_path)}[/{self.accent}]',
+                value=f'[{self.accent}]{relative_path}[/{self.accent}]',
             )
         )
         return _requirements_file_tests
@@ -361,11 +360,13 @@ class DepsCli(CliABC):
         cmd = f'pip freeze --path "{deps_dir}"'
         self.log.debug(f'event=get-requirements-lock-data, cmd={cmd}')
         try:
-            output = subprocess.run(  # pylint: disable=subprocess-run-check
-                cmd, shell=True, capture_output=True  # nosec
+            output = subprocess.run(  # noqa: PLW1510
+                cmd,
+                shell=True,
+                capture_output=True,  # nosec
             )
-        except Exception as ex:
-            self.log.error(f'event=pip-freeze, error="{ex}"')
+        except Exception:
+            self.log.exception('event=pip-freeze')
             Render.panel.failure('Failure: could not get requirements lock data.')
 
         if output.returncode != 0:
@@ -381,7 +382,7 @@ class DepsCli(CliABC):
         """
         version = None
         try:
-            p = subprocess.Popen(  # pylint: disable=consider-using-with # nosec
+            p = subprocess.Popen(  # nosec
                 [self.python_executable, '--version'],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -391,9 +392,8 @@ class DepsCli(CliABC):
             if p.returncode == 0:
                 output = stdout.decode('utf-8').strip().split(' ')[1]
                 version = Version(output)
-        except Exception as ex:
-            # best effort
-            self.log.error(f'event=get-python-version, error="{ex}"')
+        except Exception:
+            self.log.exception('event=get-python-version')
 
         return version
 
@@ -406,9 +406,7 @@ class DepsCli(CliABC):
             # temp logic until all TC instances are on version 7.2
             language_major_minor = self.app.ij.model.language_version
             if isinstance(language_major_minor, Version):
-                language_major_minor = (
-                    f'{language_major_minor.major}.{language_major_minor.minor}'  # type: ignore
-                )
+                language_major_minor = f'{language_major_minor.major}.{language_major_minor.minor}'  # type: ignore
 
             if target_major_minor != language_major_minor:
                 Render.panel.failure(

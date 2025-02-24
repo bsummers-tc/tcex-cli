@@ -2,8 +2,8 @@
 
 # standard library
 import logging
-import os
 import re
+from pathlib import Path
 
 # first-party
 from tcex_cli.app.config.model.install_json_model import ParamsModel  # TYPE-CHECKING
@@ -102,10 +102,10 @@ class GenAppInput(CliABC):
 
                 # check if validator are applicable to this input
                 if self._validator_always_array_check(input_data) is True:
-                    _always_array.append(f'\'{input_name}\'')
+                    _always_array.append(f"'{input_name}'")
 
                 if self._validator_entity_input_check(input_data) is True:
-                    _entity_input.append(f'\'{input_name}\'')
+                    _entity_input.append(f"'{input_name}'")
 
             # validator - always_array
             if _always_array:
@@ -173,14 +173,16 @@ class GenAppInput(CliABC):
                 class_name = 'Trigger Config'
                 if ij_data.service_config is True:
                     class_name = 'Service Config'
-                self._add_input_to_action_class(False, ij_data, class_name)
+                self._add_input_to_action_class(
+                    applies_to_all=False, param_data=ij_data, tc_action=class_name
+                )
         elif self.app.lj.has_layout is False or not self._tc_actions:
             # Process the following App types:
             # - Job Apps
             # - Playbook App with no layout.json
             # - Playbook App with layout.json but no tc_actions
             for ij_data in self.app.ij.model.params_dict.values():
-                self._add_input_to_action_class(True, ij_data)
+                self._add_input_to_action_class(applies_to_all=True, param_data=ij_data)
         else:
             # Process the following App types:
             # - Playbook App with layout.json and tc_action input
@@ -195,8 +197,8 @@ class GenAppInput(CliABC):
                     self._add_input_to_action_class(applies_to_all, input_data, tc_action)
 
                     self.log.debug(
-                        f'''action=inputs-to-action, input-name={input_data.name}, '''
-                        f'''applies-to-all={applies_to_all}'''
+                        f"""action=inputs-to-action, input-name={input_data.name}, """
+                        f"""applies-to-all={applies_to_all}"""
                     )
 
     @staticmethod
@@ -321,7 +323,7 @@ class GenAppInput(CliABC):
         # if we didn't find the type definition in the class definition, search the entire file
         if type_definition is None:
             type_definition = CodeOperation.find_line_in_code(
-                needle=fr'\s+{input_name}: ', code=self.app_inputs_contents
+                needle=rf'\s+{input_name}: ', code=self.app_inputs_contents
             )
 
         # type_definition -> "string_encrypt: Sensitive | None"
@@ -364,7 +366,7 @@ class GenAppInput(CliABC):
                 data = self.input_static.type_map[lookup_key][required_key]
                 _field_types.extend(data['field_type'])
                 _types.append(data['type'])
-            _types = f'''{' | '.join(_types)}'''
+            _types = f"""{' | '.join(_types)}"""
 
         return _types, _field_types
 
@@ -454,8 +456,8 @@ class GenAppInput(CliABC):
             '',
             f'{self.i1}# add entity_input validator for supported types',
             (
-                f'''{self.i1}_entity_input = validator({_entity_input}, '''
-                '''allow_reuse=True)(entity_input(only_field='value'))'''
+                f"""{self.i1}_entity_input = validator({_entity_input}, """
+                """allow_reuse=True)(entity_input(only_field='value'))"""
             ),
         ]
 
@@ -470,8 +472,9 @@ class GenAppInput(CliABC):
     @cached_property
     def app_inputs_contents(self):
         """Return app_inputs.py contents."""
-        if os.path.isfile('app_inputs.py'):
-            with open('app_inputs.py', encoding='utf-8') as f:
+        app_inputs_file = Path('app_inputs.py')
+        if app_inputs_file.is_file():
+            with app_inputs_file.open(encoding='utf-8') as f:
                 return f.read()
         return ''
 
