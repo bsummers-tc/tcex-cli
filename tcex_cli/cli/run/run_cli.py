@@ -90,7 +90,7 @@ class RunCli(CliABC):
                 launch_app.setup(debug)
                 exit_code = launch_app.launch()
 
-            case 'organization':
+            case 'organization' | 'system':
                 Render.panel.info('Launching Job App', f'[{self.panel_title}]Running App[/]')
                 launch_app = LaunchOrganization(config_json)
                 exit_code = launch_app.launch()
@@ -121,7 +121,7 @@ class RunCli(CliABC):
                 exit_code = launch_app.launch()
 
             case _:
-                exit_code = 1
+                Render.panel.failure(f'Invalid runtime level: {self.ij.model.runtime_level}')
 
         # exit execution
         self.exit_cli(exit_code)
