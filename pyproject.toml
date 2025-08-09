@@ -165,6 +165,7 @@ reportAttributeAccessIssue = false
 reportCallIssue = false
 reportIncompatibleMethodOverride = false
 reportIncompatibleVariableOverride = false
+reportOptionalMemberAccess = false
 reportOptionalSubscript = false
 reportPrivateImportUsage = false
 reportReturnType = false
