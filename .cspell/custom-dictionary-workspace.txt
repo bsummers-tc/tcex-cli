@@ -3,6 +3,7 @@ apiservice
 appbuilderconfig
 autofix
 backoff
+bumpversion
 cblades
 ciphertext
 codespell
@@ -14,6 +15,7 @@ Decrypter
 dedup
 deepdiff
 digestmod
+dotenv
 editchoice
 Encrypter
 errmsg
@@ -23,6 +25,8 @@ filterwarnings
 fireevent
 firstparty
 forcelist
+fqfn
+fqpn
 fspath
 fstring
 functool
@@ -31,6 +35,7 @@ hget
 hgetall
 hset
 hvac
+kvstore
 levelname
 maxsplit
 mccabe
@@ -44,8 +49,10 @@ pycodestyle
 Pyflakes
 pygrep
 pynput
+pyproject
 pyright
 pythonhosted
+pyupgrade
 pyyaml
 relativedelta
 reqs
@@ -55,6 +62,7 @@ setuptools
 spectool
 stdlib
 Taxii
+tcex
 tcgetattr
 TCSADRAIN
 tcsetattr

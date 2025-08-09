@@ -32,7 +32,9 @@ class LaunchPlaybook(LaunchABC):
 
     def stage(self):
         """Stage the variables in redis."""
+        # capture the stages keys?
         for key, value in self.model.stage.kvstore.items():
+            self.staged_keys.append(key)
             self.playbook.any(key, value)
 
     def print_output_data(self):

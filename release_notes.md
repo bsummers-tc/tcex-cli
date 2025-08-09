@@ -1,5 +1,14 @@
 # Release Notes
 
+## 1.0.6
+
+-   APP-4863 - [PACKAGE] Added a check to ensure the “package.app_name” value in “tcex.json” doesn't contain spaces
+-   APP-4916 - [MIGRATE] Updated to support more replacement patterns
+-   APP-4917 - [RUN] Updated “app_inputs.json” file to support environment variables
+-   APP-4918 - [RUN] Update output to exclude staged variables
+-   APP-4919 - [APP_INPUTS] Added a new command to generate “app_inputs.json” from “install.json” params
+-   APP-4920 - [RUN] - Updated run command to support system apps
+
 ## 1.0.5
 
 -   APP-4732 - [PACKAGE] Fixed dependency issue with python-dotenv

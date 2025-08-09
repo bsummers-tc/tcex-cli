@@ -69,6 +69,7 @@ def command(
         cli_v.check_install_json()
         cli_v.check_layout_json()
         cli_v.check_job_json()
+        cli_v.check_tcex_json()
         if not json_output:
             _table_validation_summary()
         if cli_v.exit_code != 0:

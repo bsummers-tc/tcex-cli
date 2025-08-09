@@ -83,6 +83,50 @@ exclude = ["tests*", "local-*"]
 # Linters / Formatters
 #
 
+# Configuration for bumpversion tool
+[tool.bumpversion]
+# Allow version bumping even if there are uncommitted changes
+allow_dirty = true
+# Controls whether to create a git commit after bumping the version
+commit = false
+# Additional arguments to pass to the git commit command
+commit_args = "--no-verify"
+# The current version of the project
+current_version = "1.0.6-dev0"
+# The commit message template used when committing version bumps
+message = "Version updated from {current_version} to {new_version}"
+# Regular expression for parsing version strings
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:
+        -                             # dash separator for pre-release section
+        (?P<pre_l>[a-zA-Z-]+)         # pre-release label
+        (?P<pre_n>0|[1-9]\\d*)        # pre-release version number
+    )?                                # pre-release section is optional
+"""
+# List of commands to run as pre-commit hooks before bumping the version
+pre_commit_hooks = ["uv sync --upgrade", "git add uv.lock"]
+# Whether to use regular expressions for version parsing
+regex = false
+# List of version string formats to use when serializing the new version
+serialize = [
+  "{major}.{minor}.{patch}-{pre_l}{pre_n}",
+  "{major}.{minor}.{patch}",
+]
+# Controls whether to create a git tag after bumping the version
+tag = false
+
+# Configuration for pre-release label part in versioning
+[tool.bumpversion.parts.pre_l]
+optional_value = "final"
+values = ["dev", "rc", "final"]
+
+# List of files to update when bumping the version
+[[tool.bumpversion.files]]
+filename = "tcex_cli/__metadata__.py"
+
 [tool.codespell]
 # https://streetsidesoftware.com/vscode-spell-checker/
 
@@ -111,11 +155,19 @@ exclude = [
   "tcex/api/tc/v2",
   "tests",
 ]
+extraPaths = [
+  ".venv/lib/python3.11/site-packages",
+]
 pythonPlatform = "Linux"
 pythonVersion = "3.11"
+reportArgumentType = false
+reportAttributeAccessIssue = false
+reportCallIssue = false
 reportIncompatibleMethodOverride = false
 reportIncompatibleVariableOverride = false
+reportOptionalSubscript = false
 reportPrivateImportUsage = false
+reportReturnType = false
 
 [tool.pytest.ini_options]
 filterwarnings = []

@@ -314,6 +314,37 @@ class ValidateCli(CliABC):
                 ValidationItemModel(name=fqfn.name, status=status)
             )
 
+    def check_tcex_json(self):
+        """Check all tcex.json files for valid schema."""
+        if 'tcex.json' in self.invalid_json_files:
+            return
+
+        status = True
+        try:
+            tj = self.app.tcex_json.model
+        except ValidationError as ex:
+            self.invalid_json_files.append(self.app.tcex_json.fqfn.name)
+            status = False
+            for error in json.loads(ex.json()):
+                location = [str(location) for location in error.get('loc')]
+                self.validation_data.errors.append(
+                    """Schema validation failed for tcex.json. """
+                    f"""{error.get('msg')}: {' -> '.join(location)}"""
+                )
+        except ValueError:
+            # any JSON decode error will be caught during syntax validation
+            return
+        else:
+            if ' ' in tj.package.app_name:
+                self.validation_data.errors.append(
+                    'The "package.app_name" value in the tcex.json file cannot contain spaces.'
+                )
+                status = False
+
+        self.validation_data.schema_.append(
+            ValidationItemModel(name=self.app.tcex_json.fqfn.name, status=status)
+        )
+
     def interactive(self):
         """[App Builder] Run in interactive mode."""
         while True:

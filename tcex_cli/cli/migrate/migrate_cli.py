@@ -129,6 +129,14 @@ class MigrateCli(CliABC):
         """Replace TcEx code."""
 
         return {
+            r'self\.playbook\.read\(self\.args\.(\w+)\)': {
+                'replacement': 'self.in_.\\1',
+                'in_file': ['app.py'],  # replacement only works in app.py
+            },
+            r'self\.tcex\.playbook\.read\(self\.args\.(\w+)\)': {
+                'replacement': 'self.in_.\\1',
+                'in_file': ['app.py'],  # replacement only works in app.py
+            },
             r'self\.args': {
                 'replacement': 'self.in_',
                 'in_file': ['app.py'],  # replacement only works in app.py
@@ -270,13 +278,13 @@ class MigrateCli(CliABC):
         """."""
         # handle Forward Ref
         if annotation.value:
-            package = annotation.value.split('.')[0]
+            package = annotation.value.split('.')[0]  # type: ignore
             if package in imported_packages['standard']:
                 # _logger.debug(f'Forward Ref: {arg.annotation.value}')
                 self._replace_string(
                     filename,
                     f"'{annotation.value}'",
-                    annotation.value,
+                    annotation.value,  # type: ignore
                 )
 
     def parse_ast_body(
