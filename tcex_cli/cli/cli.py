@@ -94,7 +94,7 @@ def version_callback(
 
 # initialize typer
 app = typer.Typer(callback=version_callback, invoke_without_command=True)
-app.command('app_inputs')(app_input.command)
+app.command('app-inputs')(app_input.command)
 app.command('deploy')(deploy.command)
 app.command('deps')(deps.command)
 app.command('init')(init.command)
