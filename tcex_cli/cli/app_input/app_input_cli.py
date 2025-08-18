@@ -94,12 +94,6 @@ class AppInputCli(CliABC):
             Render.panel.failure(panel_msg)
 
         match param.type:
-            case 'EditChoice':
-                if param.default:
-                    self.add_kvstore(variable, param.default)
-                else:
-                    self.add_kvstore(variable, '|'.join(param.valid_values))
-
             case 'KeyValueList':
                 if param.default:
                     self.add_kvstore(variable, self.get_param_default(param))
@@ -179,7 +173,7 @@ class AppInputCli(CliABC):
                     else:
                         self.add_input(param.name, 'false|true')
 
-                case 'Choice' | 'MultiChoice':
+                case 'Choice' | 'EditChoice' | 'MultiChoice':
                     if param.default:
                         self.add_input(param.name, param.default)
                     else:
