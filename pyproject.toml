@@ -1,23 +1,28 @@
+# Specify the build backend for PEP 517 builds
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=61"]
 
+# Project metadata and configuration
 [project]
 authors = [
   {name = "ThreatConnect", email = "support@threatconnect.com"},
 ]
+
+# Classifiers for the project
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "Intended Audience :: Developers",
-  "Natural Language :: English",
-  "License :: OSI Approved :: Apache Software License",
-  "Operating System :: OS Independent",
-  "Programming Language :: Python",
+  "Development Status :: 5 - Production/Stable", # Project development status
+  "Intended Audience :: Developers", # Intended audience for the project
+  "Natural Language :: English", # Language used in the project
+  "Operating System :: OS Independent", # Supported operating systems
+  "Programming Language :: Python", # Supported programming languages
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
-  "Topic :: Security",
+  "Topic :: Security", # Project topic
 ]
+
+# List of runtime dependencies
 dependencies = [
   "arrow>=1.3.0",
   "black>=25.1.0",
@@ -39,20 +44,36 @@ dependencies = [
   "tinydb>=4.8.2",
   "typer>=0.15.1",
 ]
+
+# Short description of the project
 description = "ThreatConnect Exchange App CLI Tool"
+
+# List of dynamic fields to be provided at build time
 dynamic = ["readme", "version"]
+
+# List of keywords for the project
 keywords = ["tcex", "threatconnect"]
-license = {text = "Apache-2.0"}
+
+# License information
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+
+# Name of the project
 name = "tcex_cli"
+
+# Minimum required Python version
 requires-python = ">=3.11"
 
+# CLI scripts configuration
 [project.scripts]
 tcex = "tcex_cli.cli.cli:app"
 
+# URLs related to the project
 [project.urls]
 Documentation = "https://github.com/ThreatConnect-Inc/tcex-cli"
 Source = "https://github.com/ThreatConnect-Inc/tcex-cli"
 
+# Dependency groups for development and testing
 [dependency-groups]
 dev = [
   "bandit>=1.8.3",
@@ -66,21 +87,17 @@ test = [
   "pytest-cov>=6.0.0",
 ]
 
-[tool.hatch.version]
-path = "__metadata__.py"
-
-[tool.setuptools]
-license-files = []
-
+# Dynamic configuration for setuptools
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "tcex_cli.__version__"}
 
+# Package discovery options for setuptools
 [tool.setuptools.packages.find]
 exclude = ["tests*", "local-*"]
 
 #
-# Linters / Formatters
+# Tool configurations
 #
 
 # Configuration for bumpversion tool
@@ -92,7 +109,7 @@ commit = false
 # Additional arguments to pass to the git commit command
 commit_args = "--no-verify"
 # The current version of the project
-current_version = "1.0.6-dev1"
+current_version = "1.0.6"
 # The commit message template used when committing version bumps
 message = "Version updated from {current_version} to {new_version}"
 # Regular expression for parsing version strings
@@ -127,12 +144,12 @@ values = ["dev", "rc", "final"]
 [[tool.bumpversion.files]]
 filename = "tcex_cli/__metadata__.py"
 
+# Configuration for codespell spell checker
 [tool.codespell]
 # https://streetsidesoftware.com/vscode-spell-checker/
-
-# ignore-words-list=
 skip = "*.cspell*,*.history,*local,uv.lock"
 
+# Configuration for isort import sorter
 [tool.isort]
 dedup_headings = false
 import_heading_firstparty = "first-party"
@@ -145,9 +162,9 @@ known_third_party = ""
 line_length = 100
 profile = "black"
 
+# Configuration for pyright type checker
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
-
 exclude = [
   "**/.history",
   "**/__pycache__",
@@ -170,6 +187,7 @@ reportOptionalSubscript = false
 reportPrivateImportUsage = false
 reportReturnType = false
 
+# Configuration for pytest test runner
 [tool.pytest.ini_options]
 filterwarnings = []
 junit_family = "xunit2"
@@ -177,23 +195,21 @@ testpaths = [
   "tests",
 ]
 
+# Configuration for ruff linter and formatter
 [tool.ruff]
 # https://docs.astral.sh/ruff/
-
 # exclude additional directories, outside of .gitignore.
 exclude = [
   "tests",
 ]
-
 # set line length to match black
 line-length = 100
-
 # set the python target
 target-version = "py311"
 
+# Configuration for ruff formatter
 [tool.ruff.format]
 # https://docs.astral.sh/ruff/formatter/
-
 docstring-code-format = true
 docstring-code-line-length = 60
 indent-style = "space"
@@ -201,13 +217,12 @@ line-ending = "auto"
 quote-style = "single"
 skip-magic-trailing-comma = false
 
+# Configuration for ruff linter rules
 [tool.ruff.lint]
 # https://docs.astral.sh/ruff/linter/
-
 # control "--fix" behavior.
 # fixable = []
 # unfixable = []
-
 # https://beta.ruff.rs/docs/configuration/#error-suppression
 ignore = [
   "B008", # Do not perform function call ... in argument defaults; instead, perform ...
@@ -234,7 +249,6 @@ ignore = [
   "TC001", # Move application import ... into a type-checking block
   "TID252", # Prefer absolute imports over relative imports from parent modules
 ]
-
 # control enabled plugins
 select = [
   "A", # flake8-builtins
@@ -286,7 +300,6 @@ select = [
   "W", # pycodestyle
   "YTT", # flake8-2020
 ]
-
 # Other Options
 # "ANN", # flake8-annotations
 # "COM", # flake8-commas
@@ -294,10 +307,11 @@ select = [
 # "S", # flake8-bandit
 # "Q", # flake8-quotes
 
+# Per-file ignores for ruff linter
 [tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = ["F401"]
 
+# Pydocstyle configuration for ruff linter
 [tool.ruff.lint.pydocstyle]
 # https://docs.astral.sh/ruff/linter/
-
 convention = "google"
