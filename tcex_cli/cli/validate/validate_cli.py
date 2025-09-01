@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import ast
 import json
 import sys
@@ -8,16 +7,13 @@ import traceback
 from contextlib import suppress
 from pathlib import Path
 
-# third-party
 from pydantic import ValidationError
 
-# first-party
 from tcex_cli.app.config.job_json import JobJson
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.validation_data_model import ValidationDataModel, ValidationItemModel
 
 with suppress(ModuleNotFoundError):
-    # standard library
     import sqlite3
 
 
@@ -369,4 +365,4 @@ class ValidateCli(CliABC):
 
     def interactive_output(self):
         """[App Builder] Print JSON output."""
-        print(json.dumps({'validation_data': self.validation_data.dict()}))  # noqa: T201
+        print(json.dumps({'validation_data': self.validation_data.model_dump()}))  # noqa: T201

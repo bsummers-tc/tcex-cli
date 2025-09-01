@@ -1,14 +1,11 @@
 """TcEx Framework Module"""
 
-# standard library
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Optional
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.package.package_cli import PackageCli
 from tcex_cli.cli.validate.validate_cli import ValidateCli
 from tcex_cli.render.render import Render
@@ -18,8 +15,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]  # noqa: UP007
-StrOrNone = Optional[str]  # noqa: UP007
+IntOrNone = Optional[int]  # noqa: UP045, RUF100
+StrOrNone = Optional[str]  # noqa: UP045, RUF100
 
 
 def command(

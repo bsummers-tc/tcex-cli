@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.app_input.app_input_cli import AppInputCli
 from tcex_cli.render.render import Render
 

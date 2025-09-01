@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# standard library
 from functools import cached_property
 
-# first-party
 from tcex_cli.app.config.install_json import InstallJson
 
 # from tcex_cli.pleb.cached_property import cached_property

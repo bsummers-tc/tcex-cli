@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import contextlib
 import logging
 import os
@@ -13,10 +12,8 @@ from importlib.metadata import version as get_version
 from pathlib import Path
 from urllib.parse import quote
 
-# third-party
 from semantic_version import Version
 
-# first-party
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.key_value_model import KeyValueModel
 from tcex_cli.render.render import Render

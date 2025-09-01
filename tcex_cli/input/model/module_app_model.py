@@ -1,7 +1,6 @@
 """TcEx Framework Module"""
 
-# third-party
-from pydantic import Extra
+from pydantic import ConfigDict
 
 from .api_model import ApiModel
 from .path_model import PathModel
@@ -16,7 +15,4 @@ class ModuleAppModel(ApiModel, PathModel, PlaybookCommonModel, PlaybookModel, Pr
     This model provides all the inputs required by the "tcex.app" module.
     """
 
-    class Config:
-        """Model Config"""
-
-        extra = Extra.ignore
+    model_config = ConfigDict(extra='ignore')

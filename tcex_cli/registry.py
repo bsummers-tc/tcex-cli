@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import functools
 from collections.abc import Callable, Container
 from typing import TYPE_CHECKING, Any, TypeVar

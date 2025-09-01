@@ -1,10 +1,8 @@
 """TcEx Framework Module"""
 
-# standard library
 import os
 from pathlib import Path
 
-# first-party
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.input.field_type.sensitive import Sensitive
 from tcex_cli.pleb.proxies import proxies

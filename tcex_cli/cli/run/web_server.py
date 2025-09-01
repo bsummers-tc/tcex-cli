@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import http.server
 import json
 import logging
@@ -8,11 +7,9 @@ import socketserver
 from collections.abc import Callable
 from threading import Thread
 
-# third-party
 import paho.mqtt.client as mqtt
 import redis
 
-# first-party
 from tcex_cli.cli.run.model.app_api_service_model import AppApiServiceModel
 from tcex_cli.cli.run.model.app_webhook_trigger_service_model import AppWebhookTriggerServiceModel
 from tcex_cli.cli.run.request_handler_api import RequestHandlerApi

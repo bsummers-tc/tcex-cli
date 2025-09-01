@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.app.config import AppSpecYml  # TYPE-CHECKING
 from tcex_cli.app.config.model.app_spec_yml_model import SectionsModel  # TYPE-CHECKING
 from tcex_cli.app.config.model.install_json_model import ParamsModel  # TYPE-CHECKING

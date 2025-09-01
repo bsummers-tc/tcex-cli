@@ -1,19 +1,16 @@
 """TcEx Framework Module"""
 
-# standard library
 import datetime
 import json
 from pathlib import Path
 from threading import Thread
 
-# third-party
 from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 
-# first-party
 from tcex_cli.cli.run.launch_service_common_abc import LaunchServiceCommonABC
 from tcex_cli.cli.run.model.app_api_service_model import AppApiInputModel
 from tcex_cli.cli.run.request_handler_api import RequestHandlerApi
@@ -73,7 +70,7 @@ class LaunchServiceApi(LaunchServiceCommonABC):
             layout,
             console=console,
             refresh_per_second=4,
-            screen=True,
+            screen=False,
             vertical_overflow='ellipsis',
         ) as _:
             while True:

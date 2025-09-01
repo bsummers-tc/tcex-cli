@@ -1,14 +1,11 @@
 """TcEx Framework Module"""
 
-# standard library
 import shutil
 import subprocess  # nosec
 from pathlib import Path
 
-# third-party
 from pydantic import ValidationError
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.spec_tool.gen_app_input import GenAppInput
@@ -119,7 +116,7 @@ class SpecToolCli(CliABC):
         # exclude_defaults - if False then all unused fields are added in - not good.
         # exclude_none - this should be safe to leave as True.
         # exclude_unset - this should be safe to leave as True.
-        config = ij.json(
+        config = ij.model_dump_json(
             by_alias=True,
             exclude_defaults=True,
             exclude_none=True,
@@ -146,7 +143,7 @@ class SpecToolCli(CliABC):
                 # exclude_defaults - if False then all unused fields are added in - not good.
                 # exclude_none - this should be safe to leave as True.
                 # exclude_unset - this should be safe to leave as True.
-                config = lj.json(
+                config = lj.model_dump_json(
                     by_alias=True,
                     exclude_defaults=True,
                     exclude_none=True,
@@ -166,7 +163,7 @@ class SpecToolCli(CliABC):
             try:
                 for filename, job in gen.generate():
                     if job is not None:
-                        config = job.json(
+                        config = job.model_dump_json(
                             by_alias=True,
                             exclude_defaults=True,
                             exclude_none=True,
@@ -203,7 +200,7 @@ class SpecToolCli(CliABC):
         # exclude_defaults - if False then all unused fields are added in - not good.
         # exclude_none - this should be safe to leave as True.
         # exclude_unset - this should be safe to leave as True.
-        config = tj.json(
+        config = tj.model_dump_json(
             by_alias=True,
             exclude_defaults=True,
             exclude_none=True,

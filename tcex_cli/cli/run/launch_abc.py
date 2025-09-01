@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import atexit
 import json
 import logging
@@ -14,12 +13,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from threading import Thread
 
-# third-party
 import redis
 from fakeredis import TcpFakeServer
 from pydantic import BaseModel
 
-# first-party
 from tcex_cli.cli.run.model.common_app_input_model import CommonAppInputModel
 from tcex_cli.cli.run.model.module_request_tc_model import ModuleRequestsTcModel
 from tcex_cli.logger.trace_logger import TraceLogger
@@ -51,7 +48,10 @@ class LaunchABC(ABC):
 
     def create_input_config(self, inputs: BaseModel):
         """Create files necessary to start a Service App."""
-        data = inputs.json(exclude_none=False, exclude_unset=False, exclude_defaults=False)
+        data = inputs.model_dump_json(
+            exclude_none=False, exclude_unset=False, exclude_defaults=False
+        )
+
         key = ''.join(random.choice(string.ascii_lowercase) for i in range(16))  # nosec
         encrypted_data = self.util.encrypt_aes_cbc(key, data)
 
@@ -81,7 +81,7 @@ class LaunchABC(ABC):
 
     def print_input_data(self):
         """Print the App data."""
-        input_data = self.live_format_dict(self.model.inputs.dict()).strip()
+        input_data = self.live_format_dict(self.model.inputs.model_dump()).strip()
         Render.panel.info(f'{input_data}', f'[{self.panel_title}]Input Data[/]')
 
     def _substitute_env_variables(self, data: str) -> str:
@@ -119,7 +119,7 @@ class LaunchABC(ABC):
 
     def launch(self):
         """Launch the App."""
-        # third-party
+
         from run import Run  # type: ignore
 
         # run the app
@@ -159,7 +159,7 @@ class LaunchABC(ABC):
     @cached_property
     def module_requests_tc_model(self) -> ModuleRequestsTcModel:
         """Return the Module App Model."""
-        return ModuleRequestsTcModel(**self.model.inputs.dict())
+        return ModuleRequestsTcModel(**self.model.inputs.model_dump())
 
     def output_data(self, context: str) -> dict:
         """Return playbook/service output data."""

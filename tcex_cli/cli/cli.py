@@ -1,17 +1,14 @@
 """TcEx Framework Module"""
 
-# standard library
 import contextlib
 import sys
 from importlib.metadata import version as get_version
 from pathlib import Path
 
-# third-party
 import typer
 from dotenv import load_dotenv
 from semantic_version import Version
 
-# first-party
 from tcex_cli.cli.app_input import app_input
 from tcex_cli.cli.deploy import deploy
 from tcex_cli.cli.deps import deps
@@ -34,7 +31,6 @@ def add_test_command():
         # update system path
         update_system_path()
 
-        # third-party
         from tcex_app_testing.cli.cli import app as app_test  # type: ignore
 
         app.add_typer(

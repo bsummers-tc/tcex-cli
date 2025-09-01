@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.spec_tool.spec_tool_cli import SpecToolCli
 from tcex_cli.render.render import Render
 

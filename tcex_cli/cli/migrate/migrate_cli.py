@@ -1,13 +1,11 @@
 """TcEx Framework Module"""
 
-# standard library
 import ast
 import logging
 import re
 from functools import cached_property
 from pathlib import Path
 
-# first-party
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.render.render import Render
 

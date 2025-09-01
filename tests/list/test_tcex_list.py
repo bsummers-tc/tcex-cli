@@ -1,11 +1,11 @@
 """Bin Testing"""
 
-# third-party
+
 import pytest
 from click.testing import Result
 from typer.testing import CliRunner
 
-# first-party
+
 from tcex_cli.cli.cli import app
 
 # get instance of typer CliRunner for test case

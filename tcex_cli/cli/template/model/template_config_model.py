@@ -1,15 +1,16 @@
 """TcEx Framework Module"""
 
-# standard library
-from typing import ClassVar
-
-# third-party
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from semantic_version import Version
 
 
 class TemplateConfigModel(BaseModel):
     """Model definition for template.yaml configuration file"""
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True,
+    )
 
     contributor: str
     description: str
@@ -20,20 +21,13 @@ class TemplateConfigModel(BaseModel):
     type: str
     version: Version
 
-    @validator('version', pre=True)
+    @field_validator('version', mode='before')
     @classmethod
     def version_validator(cls, v):
         """Return a version object for "version" fields."""
         if v is not None:
             return Version(v)
         return v
-
-    class Config:
-        """DataModel Config"""
-
-        arbitrary_types_allowed = True
-        json_encoders: ClassVar = {Version: lambda v: str(v)}
-        validate_assignment = True
 
     @property
     def install_command(self) -> str:

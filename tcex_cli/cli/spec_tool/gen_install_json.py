@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# standard library
 from importlib.metadata import version
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.app.config.model import InstallJsonModel
 from tcex_cli.cli.cli_abc import CliABC
@@ -40,7 +38,7 @@ class GenInstallJson(CliABC):
                 'languageVersion': self.asy.model.language_version,
                 'listDelimiter': self.asy.model.list_delimiter,
                 'minServerVersion': str(self.asy.model.min_server_version),
-                'params': [p.dict(by_alias=True) for p in self.asy.model.params],
+                'params': [p.model_dump(by_alias=True) for p in self.asy.model.params],
                 'programLanguage': self.asy.model.program_language,
                 'programMain': self.asy.model.program_main,
                 'programVersion': str(self.asy.model.program_version),
@@ -76,7 +74,7 @@ class GenInstallJson(CliABC):
             if self.asy.model.organization.feeds:
                 _feeds = []
                 for feed in self.asy.model.organization.feeds:
-                    feed_dict = feed.dict(by_alias=True)
+                    feed_dict = feed.model_dump(by_alias=True)
                     if feed_dict.get('job') is not None:
                         del feed_dict['job']
                     _feeds.append(feed_dict)
@@ -99,7 +97,7 @@ class GenInstallJson(CliABC):
             install_json_data['playbook'] = {
                 'outputPrefix': self.asy.model.output_prefix,
                 'outputVariables': [
-                    ov.dict(by_alias=True) for ov in self.asy.model.output_variables
+                    ov.model_dump(by_alias=True) for ov in self.asy.model.output_variables
                 ],
                 'type': self.asy.model.category,
             }
@@ -108,7 +106,7 @@ class GenInstallJson(CliABC):
                 and self.asy.model.playbook.retry
                 and self.asy.model.playbook.retry.allowed is True
             ):
-                install_json_data['playbook']['retry'] = self.asy.model.playbook.retry.dict(
+                install_json_data['playbook']['retry'] = self.asy.model.playbook.retry.model_dump(
                     by_alias=True
                 )
 

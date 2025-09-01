@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.validate.validate_cli import ValidateCli
 from tcex_cli.render.render import Render
 

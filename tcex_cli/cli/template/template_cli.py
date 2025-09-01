@@ -1,20 +1,17 @@
 """TcEx Framework Module"""
 
-# standard library
 import hashlib
 import json
 import os
 from collections.abc import Generator
 from pathlib import Path
 
-# third-party
 import yaml
 from pydantic import ValidationError
 from requests import Response, Session
 from requests.auth import HTTPBasicAuth
 from tinydb import Query, TinyDB
 
-# first-party
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.file_metadata_model import FileMetadataModel
 from tcex_cli.cli.template.model.template_config_model import TemplateConfigModel
@@ -109,7 +106,7 @@ class TemplateCli(CliABC):
             if config.name == '_app_common':
                 config.type = '_app_common'
             self.db.upsert(
-                json.loads(config.json()),
+                json.loads(config.model_dump_json()),
                 (config_query.type == config.type) & (config_query.name == config.name),
             )
         except Exception:

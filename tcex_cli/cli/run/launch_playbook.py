@@ -1,9 +1,7 @@
 """Run App Local"""
 
-# standard library
 from pathlib import Path
 
-# first-party
 from tcex_cli.cli.run.launch_abc import LaunchABC
 from tcex_cli.cli.run.model.app_playbook_model import AppPlaybookInputModel
 from tcex_cli.cli.run.playbook_create import PlaybookCreate

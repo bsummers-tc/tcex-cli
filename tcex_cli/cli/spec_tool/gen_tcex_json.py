@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.app.config.model import TcexJsonModel
 from tcex_cli.cli.cli_abc import CliABC
@@ -22,7 +21,7 @@ class GenTcexJson(CliABC):
         """Generate the layout.json file data."""
 
         try:
-            tcex_json_data = self.app.tj.model.dict()
+            tcex_json_data = self.app.tj.model.model_dump()
         except ValueError as ex:
             Render.panel.failure(f'Failed to load {self.filename} file.\n\n{ex}')
 

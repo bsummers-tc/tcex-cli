@@ -1,12 +1,9 @@
 """TcEx Framework Module"""
 
-# standard library
 from pathlib import Path
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.run.run_cli import RunCli
 from tcex_cli.render.render import Render
 

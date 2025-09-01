@@ -1,6 +1,5 @@
 """Run App Local"""
 
-# first-party
 from tcex_cli.cli.run.launch_abc import LaunchABC
 from tcex_cli.cli.run.model.app_organization_model import AppOrganizationInputModel
 from tcex_cli.pleb.cached_property import cached_property

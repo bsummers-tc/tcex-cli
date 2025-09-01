@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.app.config.model.job_json_model import JobJsonModel
 from tcex_cli.cli.cli_abc import CliABC
@@ -22,7 +21,7 @@ class GenJobJson(CliABC):
             and self.asy.model.organization.feeds
         ):
             for feed in self.asy.model.organization.feeds:
-                _job_data = feed.job.dict(by_alias=True)
+                _job_data = feed.job.model_dump(by_alias=True)
                 app_name = self.app.tj.model.package.app_name.replace('_', ' ')
 
                 # handle statically defined version in tcex.json file

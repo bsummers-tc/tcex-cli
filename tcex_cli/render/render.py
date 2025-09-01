@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# third-party
 from rich import print as print_
 from rich.console import Group
 from rich.panel import Panel
@@ -8,7 +7,6 @@ from rich.progress import BarColumn, Progress, TextColumn
 from rich.rule import Rule
 from rich.table import Column, Table
 
-# first-party
 from tcex_cli.cli.model.app_metadata_model import AppMetadataModel
 from tcex_cli.cli.model.validation_data_model import ValidationItemModel
 from tcex_cli.cli.template.model.template_config_model import TemplateConfigModel
@@ -133,7 +131,7 @@ class Render(RenderUtil):
             style='bold',
         )
 
-        for name, value in summary_data.dict().items():
+        for name, value in summary_data.model_dump().items():
             name_ = name.replace('_', ' ').title()
             table.add_row(name_, value)
 

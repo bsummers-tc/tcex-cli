@@ -1,12 +1,9 @@
 """TcEx Framework Module"""
 
-# standard library
 from typing import Optional
 
-# third-party
 import typer
 
-# first-party
 from tcex_cli.cli.deps.deps_cli import DepsCli
 from tcex_cli.render.render import Render
 
@@ -15,8 +12,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]  # noqa: UP007
-StrOrNone = Optional[str]  # noqa: UP007
+IntOrNone = Optional[int]  # noqa: UP07, UP045, RUF100
+StrOrNone = Optional[str]  # noqa: UP07, UP045, RUF100
 
 
 def command(
@@ -73,7 +70,7 @@ def command(
         cli.install_deps_tests()
 
         # render output
-        Render.table.key_value('Dependency Summary', [o.dict() for o in cli.output])
+        Render.table.key_value('Dependency Summary', [o.model_dump() for o in cli.output])
     except Exception as ex:
         cli.log.exception('Failed to run "tcex deps" command.')
         Render.panel.failure(f'Exception: {ex}')

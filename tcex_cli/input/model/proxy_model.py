@@ -1,9 +1,7 @@
 """TcEx Framework Module"""
 
-# third-party
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
-# first-party
 from tcex_cli.input.field_type.sensitive import Sensitive
 
 
@@ -48,3 +46,10 @@ class ProxyModel(BaseModel):
         description='Flag to enable proxy for ThreatConnect connection.',
         inclusion_reason='runtimeLevel',
     )
+
+    @field_serializer('tc_proxy_password')
+    def serialize_sensitive_fields(self, value: Sensitive | None) -> str | None:
+        """Serialize sensitive fields."""
+        if value is not None and hasattr(value, 'value'):
+            return value.value
+        return value

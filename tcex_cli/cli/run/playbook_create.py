@@ -1,15 +1,12 @@
 """Playbook Create"""
 
-# standard library
 import base64
 import json
 import logging
 from pathlib import PosixPath
 
-# third-party
 from redis.client import Redis
 
-# first-party
 from tcex_cli.input.field_type.sensitive import Sensitive
 
 # get tcex logger

@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.app.config.install_json import InstallJson
 from tcex_cli.app.config.job_json import JobJson
 from tcex_cli.app.config.layout_json import LayoutJson

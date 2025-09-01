@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.cli.run.model.api_model import ApiModel
 from tcex_cli.cli.run.model.proxy_model import ProxyModel
 

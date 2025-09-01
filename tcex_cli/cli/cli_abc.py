@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import contextlib
 import logging
 import os
@@ -9,10 +8,8 @@ from abc import ABC
 from functools import cached_property
 from pathlib import Path
 
-# third-party
 from semantic_version import Version
 
-# first-party
 from tcex_cli.app.app import App
 from tcex_cli.input.field_type.sensitive import Sensitive
 from tcex_cli.registry import registry

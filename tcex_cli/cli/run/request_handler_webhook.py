@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import http.server
 import json
 from threading import Event
@@ -9,7 +8,6 @@ from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 if TYPE_CHECKING:
-    # first-party
     from tcex_cli.cli.run.web_server import WebServer  # CIRCULAR IMPORT
 
 
@@ -103,18 +101,18 @@ class RequestHandlerWebhook(http.server.BaseHTTPRequestHandler):
 
         return  # noqa: PLR1711
 
-    def do_DELETE(self):  # noqa: N802
+    def do_DELETE(self):  # noqa: N802, RUF100
         """Handle DELETE method."""
         return self.call_service('DELETE')
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):  # noqa: N802, RUF100
         """Handle GET method."""
         return self.call_service('GET')
 
-    def do_PATCH(self):  # noqa: N802
+    def do_PATCH(self):  # noqa: N802, RUF100
         """Handle PATCH method."""
         return self.call_service('PATCH')
 
-    def do_POST(self):  # noqa: N802
+    def do_POST(self):  # noqa: N802, RUF100
         """Handle POST method."""
         return self.call_service('POST')

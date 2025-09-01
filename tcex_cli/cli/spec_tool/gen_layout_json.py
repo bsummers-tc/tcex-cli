@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.app.config.model import LayoutJsonModel
 from tcex_cli.cli.cli_abc import CliABC

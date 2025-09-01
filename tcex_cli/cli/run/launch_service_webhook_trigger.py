@@ -1,15 +1,12 @@
 """TcEx Framework Module"""
 
-# standard library
 from threading import Thread
 
-# third-party
 from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
 
-# first-party
 from tcex_cli.cli.run.launch_service_common_trigger_abc import LaunchServiceCommonTriggersABC
 from tcex_cli.cli.run.model.app_webhook_trigger_service_model import AppWebhookTriggerInputModel
 from tcex_cli.cli.run.request_handler_webhook import RequestHandlerWebhook

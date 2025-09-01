@@ -1,6 +1,5 @@
 """TcEx Framework Module"""
 
-# standard library
 import fnmatch
 import json
 import os
@@ -8,7 +7,6 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-# first-party
 from tcex_cli.app.config.install_json import InstallJson
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.model.app_metadata_model import AppMetadataModel
@@ -134,8 +132,8 @@ class PackageCli(CliABC):
         print(  # noqa: T201
             json.dumps(
                 {
-                    'package_data': self.app_metadata.dict(),
-                    'validation_data': self.validation_data.dict(),
+                    'package_data': self.app_metadata.model_dump(),
+                    'validation_data': self.validation_data.model_dump(),
                 }
             )
         )

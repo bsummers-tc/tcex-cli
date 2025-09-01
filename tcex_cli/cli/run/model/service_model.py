@@ -1,14 +1,21 @@
 """TcEx Framework Module"""
 
-# third-party
-from pydantic import BaseSettings, Extra
+from pydantic import field_serializer
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# first-party
 from tcex_cli.input.field_type.sensitive import Sensitive
 
 
 class ServiceModel(BaseSettings):
     """Model Definition"""
+
+    model_config = SettingsConfigDict(
+        extra='allow',
+        case_sensitive=False,
+        env_file='.env',
+        env_file_encoding='utf-8',
+        validate_assignment=True,
+    )
 
     # service model
     tc_svc_broker_cacert_file: str | None = None
@@ -23,11 +30,9 @@ class ServiceModel(BaseSettings):
     tc_svc_id: int | None = None
     tc_svc_server_topic: str = 'tcex-app-testing-server-topic'
 
-    class Config:
-        """DataModel Config"""
-
-        extra = Extra.allow
-        case_sensitive = False
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
-        validate_assignment = True
+    @field_serializer('tc_svc_broker_token')
+    def serialize_sensitive_fields(self, value: Sensitive | None) -> str | None:
+        """Serialize sensitive fields."""
+        if value is not None and hasattr(value, 'value'):
+            return value.value
+        return value

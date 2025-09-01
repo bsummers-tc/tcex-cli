@@ -1,14 +1,14 @@
 """TcEx Framework Module"""
 
-# standard library
 from pathlib import Path
 
-# third-party
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class FileMetadataModel(BaseModel, extra=Extra.allow):
+class FileMetadataModel(BaseModel):
     """Model Definition"""
+
+    model_config = ConfigDict(extra='allow')
 
     download_url: str | None = Field(
         None, description='The download url for the file. Directories will not have a download url.'
@@ -21,7 +21,7 @@ class FileMetadataModel(BaseModel, extra=Extra.allow):
 
     # local metadata
     relative_path: Path = Field(
-        'tmp',
+        default=Path('tmp'),
         description='The relative path of the file. This is the path from the root of the repo.',
     )
     template_name: str

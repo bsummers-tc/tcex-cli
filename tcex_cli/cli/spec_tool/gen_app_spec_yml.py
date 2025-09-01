@@ -1,13 +1,10 @@
 """TcEx Framework Module"""
 
-# standard library
 import json
 from pathlib import Path
 
-# third-party
 from semantic_version import Version
 
-# first-party
 from tcex_cli.app.config import AppSpecYml
 from tcex_cli.app.config.model import AppSpecYmlModel
 from tcex_cli.cli.cli_abc import CliABC
@@ -74,7 +71,7 @@ class GenAppSpecYml(CliABC):
                 continue
             with feed_job_file.open(encoding='utf-8') as f:
                 job = json.load(f)
-            feed_dict = feed.dict(by_alias=True)
+            feed_dict = feed.model_dump(by_alias=True)
             feed_dict['job'] = job
             feeds.append(feed_dict)
         app_spec_yml_data.setdefault('organization', {})
@@ -127,7 +124,9 @@ class GenAppSpecYml(CliABC):
                     if not self._is_advanced_request_output(name):
                         output_variable_model = self.app.ij.model.get_output(name)
                         if output_variable_model is not None:
-                            _output_variables.append(output_variable_model.dict(by_alias=True))
+                            _output_variables.append(
+                                output_variable_model.model_dump(by_alias=True)
+                            )
 
                 _output_data.append({'display': display, 'outputVariables': _output_variables})
 
@@ -168,7 +167,7 @@ class GenAppSpecYml(CliABC):
                 if not self._is_advanced_request_input(p['name']):
                     param = self.app.ij.model.get_param(p['name'])
                     if param is not None:
-                        param = param.dict(by_alias=True)
+                        param = param.model_dump(by_alias=True)
                         param['display'] = p.get('display')
                         _section_data['params'].append(param)
             sections.append(_section_data)
@@ -179,13 +178,15 @@ class GenAppSpecYml(CliABC):
         """Retrieve the appropriate data regardless of if its a layout based app."""
         if self.app.lj.has_layout:
             # handle layout based Apps
-            _current_data = [i.dict(by_alias=True) for i in self.app.lj.model.inputs]
+            _current_data = [i.model_dump(by_alias=True) for i in self.app.lj.model.inputs]
 
             # add hidden inputs from install.json (hidden inputs are not in layouts.json)
             _current_data.append(
                 {
                     'parameters': [
-                        p.dict(by_alias=True) for p in self.app.ij.model.params if p.hidden is True
+                        p.model_dump(by_alias=True)
+                        for p in self.app.ij.model.params
+                        if p.hidden is True
                     ],
                     'title': 'Hidden Inputs',
                 }
@@ -194,7 +195,7 @@ class GenAppSpecYml(CliABC):
             # handle non-layout based Apps
             _current_data = [
                 {
-                    'parameters': [p.dict(by_alias=True) for p in self.app.ij.model.params],
+                    'parameters': [p.model_dump(by_alias=True) for p in self.app.ij.model.params],
                     'title': 'Inputs',
                 }
             ]
@@ -283,12 +284,11 @@ class GenAppSpecYml(CliABC):
         self._add_output_data(app_spec_yml_data)
 
         asy_data = json.loads(
-            AppSpecYmlModel(**app_spec_yml_data).json(
+            AppSpecYmlModel(**app_spec_yml_data).model_dump_json(
                 by_alias=True,
                 exclude_defaults=True,
                 exclude_none=True,
                 exclude_unset=True,
-                sort_keys=False,
             )
         )
 

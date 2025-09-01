@@ -1,16 +1,13 @@
 """TcEx Framework Module"""
 
-# standard library
 from abc import ABC
 from pathlib import Path
 from threading import Event, Thread
 
-# third-party
 import paho.mqtt.client as mqtt
 from rich.panel import Panel
 from rich.table import Table
 
-# first-party
 from tcex_cli.cli.run.launch_abc import LaunchABC
 from tcex_cli.message_broker.mqtt_message_broker import MqttMessageBroker
 from tcex_cli.pleb.cached_property import cached_property

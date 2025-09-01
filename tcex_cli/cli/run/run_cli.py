@@ -1,11 +1,9 @@
 """TcEx Framework Module"""
 
-# standard library
 import os
 import sys
 from pathlib import Path
 
-# first-party
 from tcex_cli.app.config.install_json import InstallJson
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.run.launch_organization import LaunchOrganization
@@ -56,7 +54,7 @@ class RunCli(CliABC):
 
     def debug(self, debug_port: int):
         """Run the App in debug mode."""
-        # third-party
+
         import debugpy  # noqa: T100
 
         Render.panel.info(

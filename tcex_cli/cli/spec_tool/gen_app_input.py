@@ -1,11 +1,9 @@
 """TcEx Framework Module"""
 
-# standard library
 import logging
 import re
 from pathlib import Path
 
-# first-party
 from tcex_cli.app.config.model.install_json_model import ParamsModel  # TYPE-CHECKING
 from tcex_cli.cli.cli_abc import CliABC
 from tcex_cli.cli.spec_tool.gen_app_input_static import GenAppInputStatic
