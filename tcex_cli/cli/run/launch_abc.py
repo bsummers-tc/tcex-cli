@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import random
+import re
 import socket
 import string
 import sys
@@ -42,6 +43,7 @@ class LaunchABC(ABC):
         self.accent = 'dark_orange'
         self.log = _logger
         self.panel_title = 'blue'
+        self.staged_keys = []
         self.util = Util()
 
         # ensure redis is available
@@ -82,16 +84,37 @@ class LaunchABC(ABC):
         input_data = self.live_format_dict(self.model.inputs.dict()).strip()
         Render.panel.info(f'{input_data}', f'[{self.panel_title}]Input Data[/]')
 
+    def _substitute_env_variables(self, data: str) -> str:
+        """Substitute environment variables in the format ${env.VARIABLE_NAME}.
+
+        Args:
+            data: The data structure to process str
+
+        Returns:
+            The data structure with environment variables substituted
+        """
+        # Pattern to match ${env.VARIABLE_NAME}
+        pattern = re.compile(r'(?P<env_pattern>\$\{env\.(?P<env_var_name>\w+)\})')
+        for match in pattern.finditer(data):
+            env_pattern = match.group('env_pattern')
+            env_var_name = match.group('env_var_name')
+            # get os environment variable
+            env_value = os.getenv(env_var_name, None)
+            if env_value is not None:
+                data = re.sub(re.escape(env_pattern), env_value, data)
+        return data
+
     def construct_model_inputs(self) -> dict:
         """Return the App inputs."""
         app_inputs = {}
         if self.config_json.is_file():
-            with self.config_json.open('r', encoding='utf-8') as fh:
-                try:
-                    app_inputs = json.load(fh)
-                except ValueError as ex:
-                    print(f'Error loading app_inputs.json: {ex}')  # noqa: T201
-                    sys.exit(1)
+            try:
+                app_inputs_string = self.config_json.read_text(encoding='utf-8')
+                app_inputs_string = self._substitute_env_variables(app_inputs_string)
+                app_inputs = json.loads(app_inputs_string)
+            except ValueError as ex:
+                print(f'Error loading app_inputs.json: {ex}')  # noqa: T201
+                sys.exit(1)
         return app_inputs
 
     def launch(self):
@@ -145,6 +168,7 @@ class LaunchABC(ABC):
             return {
                 k: json.loads(v)
                 for k, v in self.output_data_process(output_data_).items()  # type: ignore
+                if k not in self.staged_keys
             }
         return {}
 

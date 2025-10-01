@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from semantic_version import Version
 
 # first-party
+from tcex_cli.cli.app_input import app_input
 from tcex_cli.cli.deploy import deploy
 from tcex_cli.cli.deps import deps
 from tcex_cli.cli.migrate import migrate
@@ -93,6 +94,7 @@ def version_callback(
 
 # initialize typer
 app = typer.Typer(callback=version_callback, invoke_without_command=True)
+app.command('app-inputs')(app_input.command)
 app.command('deploy')(deploy.command)
 app.command('deps')(deps.command)
 app.command('init')(init.command)
