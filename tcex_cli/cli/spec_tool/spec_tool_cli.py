@@ -122,7 +122,6 @@ class SpecToolCli(CliABC):
             exclude_none=True,
             exclude_unset=True,
             indent=2,
-            sort_keys=True,
         )
         self.write_app_file(gen.filename, f'{config}\n')
 
@@ -149,7 +148,6 @@ class SpecToolCli(CliABC):
                     exclude_none=True,
                     exclude_unset=True,
                     indent=2,
-                    sort_keys=True,
                 )
                 self.write_app_file(gen.filename, f'{config}\n')
 
@@ -169,7 +167,6 @@ class SpecToolCli(CliABC):
                             exclude_none=True,
                             exclude_unset=True,
                             indent=2,
-                            sort_keys=True,
                         )
                         self.write_app_file(filename, f'{config}\n')
             except ValidationError as ex:
@@ -206,7 +203,6 @@ class SpecToolCli(CliABC):
             exclude_none=True,
             exclude_unset=True,
             indent=2,
-            sort_keys=True,
         )
         self.write_app_file(gen.filename, f'{config}\n')
 
