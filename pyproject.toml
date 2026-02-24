@@ -31,7 +31,7 @@ dependencies = [
   "inflection>=0.5.1",
   "isort>=6.0.0",
   "jmespath>=1.0.1",
-  "paho-mqtt<2.0.0",
+  "paho-mqtt<3.0.0",
   "pyaes>=1.6.1",
   "pydantic>=2.0.0",
   "pydantic-settings>=2.10.1",
@@ -44,6 +44,7 @@ dependencies = [
   "semantic-version>=2.10.0",
   "tinydb>=4.8.2",
   "typer>=0.15.1",
+  "wrapt>=1.17.2",
 ]
 
 # Short description of the project
@@ -82,11 +83,13 @@ dev = [
   "pip>=25.2",
   "pyright>=1.1.394",
   "pyupgrade>=3.19.1",
-  "ruff>=0.9.7",
+  "ruff>=0.15.2",
 ]
 test = [
   "pytest>=8.3.4",
   "pytest-cov>=6.0.0",
+  "pytest-ordering>=0.6",
+  "python-dotenv>=1.2.1",
 ]
 
 # Dynamic configuration for setuptools
@@ -150,19 +153,6 @@ filename = "tcex_cli/__metadata__.py"
 [tool.codespell]
 # https://streetsidesoftware.com/vscode-spell-checker/
 skip = "*.cspell*,*.history,*local,uv.lock"
-
-# Configuration for isort import sorter
-[tool.isort]
-dedup_headings = false
-import_heading_firstparty = "first-party"
-import_heading_stdlib = "standard library"
-import_heading_thirdparty = "third-party"
-include_trailing_comma = true
-known_first_party = ""
-known_local_folder = "."
-known_third_party = ""
-line_length = 100
-profile = "black"
 
 # Configuration for pyright type checker
 [tool.pyright]
@@ -245,12 +235,15 @@ ignore = [
   "G004", # Logging statement uses f-string
   "N818", # Exception name ... should be named with an Error suffix
   "PGH003", # Use specific rule codes when ignoring type issues
+  "PGH004", # Use specific rule codes when using `ruff: noqa`
   "PLR0912", # Too many branches
   "PLR0913", # Too many arguments in function definition
+  "PLR0915", # Too many statements
   "PT006", # Wrong name(s) type in ..., expected ...
   "TC001", # Move application import ... into a type-checking block
+  "TC003", # Move standard library import ... into a type-checking block
+  "TC006", # Checks for unquoted type expressions in typing.cast() calls.
   "TID252", # Prefer absolute imports over relative imports from parent modules
-  "UP007",
 ]
 # control enabled plugins
 select = [
@@ -314,7 +307,24 @@ select = [
 [tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = ["F401"]
 
+[tool.ruff.lint.isort]
+# Define a default section for any imports that don't fit into the specified section-order.
+default-section = "first-party"
+
+# A list of modules to consider standard-library, in addition to those known to Ruff in advance
+extra-standard-library = []
+
+# Map known_local_folder to known-local-folder
+known-local-folder = ["tcex_cli"]
+
+# Override in which order the sections should be output. Can be used to move custom sections.
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+# Equivalent to include_trailing_comma = true
+split-on-trailing-comma = true
+
 # Pydocstyle configuration for ruff linter
 [tool.ruff.lint.pydocstyle]
 # https://docs.astral.sh/ruff/linter/
+
 convention = "google"

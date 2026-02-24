@@ -56,7 +56,7 @@ class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
             title_align='left',
         )
 
-    def process_client_channel(self, client, userdata, message):  # noqa: ARG002
+    def process_client_channel(self, _client, _userdata, message):
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)
@@ -86,7 +86,7 @@ class LaunchServiceCommonTriggersABC(LaunchServiceCommonABC, ABC):
 
         self.event.set()
 
-    def process_server_channel(self, client, userdata, message):  # noqa: ARG002
+    def process_server_channel(self, _client, _userdata, message):
         """Handle message broker on_message shutdown command events."""
         try:
             msg = json.loads(message.payload)

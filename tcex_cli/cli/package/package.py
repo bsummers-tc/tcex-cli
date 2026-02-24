@@ -15,8 +15,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]  # noqa: UP045, RUF100
-StrOrNone = Optional[str]  # noqa: UP045, RUF100
+IntOrNone = Optional[int]  # noqa: UP007, UP045, RUF100
+StrOrNone = Optional[str]  # noqa: UP007, UP045, RUF100
 
 
 def command(
@@ -30,10 +30,12 @@ def command(
         default=False, help='If true, validation errors will not prevent package.'
     ),
     json_output: bool = typer.Option(
-        default=False, help='If true, the output of the validation will be returned in JSON format.'
+        default=False,
+        help='If true, the output of the validation will be returned in JSON format.',
     ),
     output_dir: Path = typer.Option(
-        'target', help='(Advanced) Directory name (relative to App) to write the App package.'
+        'target',
+        help='(Advanced) Directory name (relative to App) to write the App package.',
     ),
 ):
     """Package the current App.

@@ -28,7 +28,6 @@ class DepsCli(CliABC):
     def __init__(
         self,
         app_builder: bool,
-        branch: str,
         no_cache_dir: bool,
         pre: bool,
         proxy_host: str | None,
@@ -39,7 +38,6 @@ class DepsCli(CliABC):
         """Initialize instance properties."""
         super().__init__()
         self.app_builder = app_builder
-        self.branch = branch
         self.no_cache_dir = no_cache_dir
         self.pre = pre
         self.proxy_host = self._process_proxy_host(proxy_host)
@@ -54,7 +52,6 @@ class DepsCli(CliABC):
         self.log = _logger
         self.output: list[KeyValueModel] = []
         self.proxy_enabled = False
-        self.requirements_fqfn_branch = None
         self.requirements_lock = self.app_path / 'requirements.lock'
         self.requirements_lock_tests = self.app_path / 'tests' / 'requirements.lock'
         self.requirements_txt = self.app_path / 'requirements.txt'
@@ -222,8 +219,6 @@ class DepsCli(CliABC):
         self._remove_previous(self.deps_dir)
 
         # build the sub process command
-
-        # support temp (branch) requirements.txt file
         exe_command = self._build_command(self.deps_dir, self.requirements_fqfn)
 
         # display command setting
@@ -236,10 +231,6 @@ class DepsCli(CliABC):
                 self.download_deps(exe_command)
         else:
             self.download_deps(exe_command)
-
-        # if self.requirements_fqfn_branch:
-        #     # remove temp requirements.txt file
-        #     self.requirements_fqfn_branch.unlink()
 
         if self.requirements_lock.exists() is False:
             if error:

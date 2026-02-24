@@ -385,6 +385,10 @@ class GenReadmeMd(CliABC):
         # add labels
         self._add_labels(readme_md)
 
-        # add end of file newline
-        readme_md.append('')
+        # ensure exactly one trailing newline
+        idx = len(readme_md)
+        while idx > 0 and readme_md[idx - 1] == '':
+            idx -= 1
+        readme_md[idx:] = ['']
+
         return readme_md
