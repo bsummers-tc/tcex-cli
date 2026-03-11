@@ -13,8 +13,8 @@ default_branch = 'v2'
 
 # typer does not yet support PEP 604, but pyupgrade will enforce
 # PEP 604. this is a temporary workaround until support is added.
-IntOrNone = Optional[int]  # noqa: UP07, UP045, RUF100
-StrOrNone = Optional[str]  # noqa: UP07, UP045, RUF100
+IntOrNone = Optional[int]  # noqa: UP007, UP045, RUF100
+StrOrNone = Optional[str]  # noqa: UP007, UP045, RUF100
 
 
 def command(
@@ -51,12 +51,6 @@ def command(
     * PROXY_USER\n
     * PROXY_PASS\n
     """
-    cli = TemplateCli(
-        proxy_host,
-        proxy_port,
-        proxy_user,
-        proxy_pass,
-    )
     if list(Path.cwd().iterdir()) and force is False:
         Render.panel.failure(
             'The current directory does not appear to be empty. Apps should '
@@ -64,34 +58,24 @@ def command(
             'existing App then please try using the "tcex update" command instead.',
         )
 
+    cli = TemplateCli(
+        proxy_host,
+        proxy_port,
+        proxy_user,
+        proxy_pass,
+    )
+
     if clear:
-        # clear the template cache
-        cli.clear()
+        cli.clear_cache(branch)
 
     try:
-        Render.panel.info('Installing template files')
-        downloads = cli.init(branch, template_name, template_type, app_builder)
-        progress = Render.progress_bar_download()
-        with progress:
-            for item in progress.track(
-                downloads,
-                description='Downloading',
-            ):
-                cli.download_template_file(item)
-
-        # update tcex.json file with template data, external App do not support tcex.json
-        if template_type != 'external':
-            cli.update_tcex_json()
-
-            # update manifest
-            cli.template_manifest_write()
+        cli.update(branch, template_name, template_type, force=True, app_builder=app_builder)
 
         Render.table.key_value(
             'Initialization Summary',
             {
                 'Template Name': template_name,
                 'Template Type': template_type,
-                'Files Downloaded': str(len(downloads)),
                 'Branch': branch,
             },
         )
