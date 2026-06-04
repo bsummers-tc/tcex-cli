@@ -57,7 +57,7 @@ class RunCli(CliABC):
     def debug(self, debug_port: int):
         """Run the App in debug mode."""
         # third-party
-        import debugpy  # noqa: T100
+        import debugpy  # noqa: T100, PLC0415
 
         Render.panel.info(
             f'Waiting for debugger to attach to port: [{self.accent}]{debug_port}[/{self.accent}].',

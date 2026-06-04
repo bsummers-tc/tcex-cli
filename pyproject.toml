@@ -25,9 +25,9 @@ classifiers = [
 # List of runtime dependencies
 dependencies = [
   "arrow~=1.3.0",
-  "black~=25.1.0",
+  "black~=26.3.1",
   "debugpy~=1.8.12",
-  "fakeredis~=2.27.0",
+  "fakeredis~=2.36.0",
   "inflection~=0.5.1",
   "isort~=6.0.0",
   "jmespath~=1.0.1",
@@ -35,10 +35,10 @@ dependencies = [
   "pyaes~=1.6.1",
   "pydantic~=1.10.0",
   "python-dateutil~=2.9.0",
-  "python-dotenv~=1.0.1",
+  "python-dotenv~=1.2.2",
   "pyyaml~=6.0.2",
-  "redis~=4.6.0",
-  "requests~=2.32.3",
+  "redis~=8.0.0",
+  "requests~=2.33.0",
   "rich~=13.9.4",
   "semantic-version~=2.10.0",
   "tinydb~=4.8.2",
@@ -79,12 +79,12 @@ Source = "https://github.com/ThreatConnect-Inc/tcex-cli"
 dev = [
   "bandit~=1.8.3",
   "pre-commit~=4.1.0",
-  "pyright~=1.1.394",
   "pyupgrade~=3.19.1",
   "ruff~=0.15.2",
+  "ty~=0.0.42",
 ]
 test = [
-  "pytest~=8.3.4",
+  "pytest~=9.0.3",
   "pytest-cov~=6.0.0",
   "pytest-ordering~=0.6",
 ]
@@ -149,7 +149,7 @@ filename = "tcex_cli/__metadata__.py"
 # Configuration for codespell spell checker
 [tool.codespell]
 # https://streetsidesoftware.com/vscode-spell-checker/
-skip = "*.cspell*,*.history,*local,uv.lock"
+skip = "*.cspell*,*.history,*local,uv.lock,*enforce_us_spelling.sh"
 
 # Configuration for isort import sorter
 [tool.isort]
@@ -164,30 +164,25 @@ known_third_party = ""
 line_length = 100
 profile = "black"
 
-# Configuration for pyright type checker
-[tool.pyright]
-# https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
+# Configuration for ty type checker
+# https://docs.astral.sh/ty/reference/configuration/
+[tool.ty.environment]
+python-platform = "linux"
+python-version = "3.11"
+
+[tool.ty.src]
 exclude = [
   "**/.history",
   "**/__pycache__",
   "**/local-*",
-  "tcex/api/tc/v2",
   "tests",
 ]
-extraPaths = [
-  ".venv/lib/python3.11/site-packages",
-]
-pythonPlatform = "Linux"
-pythonVersion = "3.11"
-reportArgumentType = false
-reportAttributeAccessIssue = false
-reportCallIssue = false
-reportIncompatibleMethodOverride = false
-reportIncompatibleVariableOverride = false
-reportOptionalMemberAccess = false
-reportOptionalSubscript = false
-reportPrivateImportUsage = false
-reportReturnType = false
+
+[tool.ty.rules]
+# Override checks intentionally disabled (carried over from the prior pyright
+# config: reportIncompatibleMethodOverride / reportIncompatibleVariableOverride).
+invalid-attribute-override = "ignore"
+invalid-method-override = "ignore"
 
 # Configuration for pytest test runner
 [tool.pytest.ini_options]
@@ -250,6 +245,7 @@ ignore = [
   "PT006", # Wrong name(s) type in ..., expected ...
   "TC001", # Move application import ... into a type-checking block
   "TID252", # Prefer absolute imports over relative imports from parent modules
+  "UP045", # Use `X | None` for type annotations (typer does not yet support PEP 604)
 ]
 # control enabled plugins
 select = [

@@ -44,6 +44,8 @@ class AppInputCli(CliABC):
     def get_param_default(self, param: ParamsModel) -> Any:
         """Get the default value for the parameter."""
         try:
+            if not isinstance(param.default, str):
+                raise TypeError  # noqa: TRY301
             return json.loads(param.default)
         except (json.JSONDecodeError, TypeError):
             panel_msg = f'Error parsing input for {param.name} -> {param.default}'
@@ -128,12 +130,15 @@ class AppInputCli(CliABC):
 
     def prompt_user_for_playbook_datatype(self, playbook_data_types: list[str]) -> str:
         """Prompt user for playbookDataType."""
-        return Render.prompt.ask(
-            'This input has multiple playbookDataTypes, please choose one: ',
-            choices=playbook_data_types,
-            default=playbook_data_types[0],
-            show_choices=True,
-            show_default=True,
+        return (
+            Render.prompt.ask(
+                'This input has multiple playbookDataTypes, please choose one: ',
+                choices=playbook_data_types,
+                default=playbook_data_types[0],
+                show_choices=True,
+                show_default=True,
+            )
+            or playbook_data_types[0]
         )
 
     def prompt_user_for_optional_params(self, param: ParamsModel) -> bool:
@@ -175,7 +180,7 @@ class AppInputCli(CliABC):
 
                 case 'Choice' | 'EditChoice' | 'MultiChoice':
                     if param.default:
-                        self.add_input(param.name, param.default)
+                        self.add_input(param.name, str(param.default))
                     else:
                         self.add_input(param.name, '|'.join(param.valid_values))
 
