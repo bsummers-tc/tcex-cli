@@ -120,7 +120,7 @@ class LaunchABC(ABC):
     def launch(self):
         """Launch the App."""
 
-        from run import Run  # type: ignore
+        from run import Run  # type: ignore # noqa: PLC0415
 
         # run the app
         exit_code = 0
@@ -167,7 +167,7 @@ class LaunchABC(ABC):
         if output_data_:
             return {
                 k: json.loads(v)
-                for k, v in self.output_data_process(output_data_).items()  # type: ignore
+                for k, v in self.output_data_process(output_data_).items()
                 if k not in self.staged_keys
             }
         return {}
