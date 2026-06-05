@@ -397,7 +397,7 @@ class DepsCli(CliABC):
             # temp logic until all TC instances are on version 7.2
             language_major_minor = self.app.ij.model.language_version
             if isinstance(language_major_minor, Version):
-                language_major_minor = f'{language_major_minor.major}.{language_major_minor.minor}'  # type: ignore
+                language_major_minor = f'{language_major_minor.major}.{language_major_minor.minor}'
 
             if target_major_minor != language_major_minor:
                 Render.panel.failure(
