@@ -58,7 +58,7 @@ class Plan(BaseModel):
     )
 
     @property
-    def summary(self) -> dict[str, str]:
+    def summary(self) -> dict[str, str | None]:
         """Return a summary dict suitable for Render.table.key_value."""
         return {
             'Skip': str(len(self.skip)),

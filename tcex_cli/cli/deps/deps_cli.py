@@ -22,6 +22,7 @@ from tcex_cli.render.render import Render
 # get logger
 _logger = logging.getLogger(__name__.split('.', maxsplit=1)[0])
 
+
 class DepsCli(CliABC):
     """Dependencies Handling Module."""
 
@@ -66,7 +67,6 @@ class DepsCli(CliABC):
         if (uv_executable := shutil.which('uv')) and self.is_executable(Path(uv_executable)):
             self.tool = 'uv'
             self.uv_executable = uv_executable
-
 
     def _build_command(self, deps_dir: Path, requirements_file: Path) -> list[str]:
         """Build the pip command for installing dependencies."""
@@ -401,7 +401,7 @@ class DepsCli(CliABC):
             # temp logic until all TC instances are on version 7.2
             language_major_minor = self.app.ij.model.language_version
             if isinstance(language_major_minor, Version):
-                language_major_minor = f'{language_major_minor.major}.{language_major_minor.minor}'  # type: ignore
+                language_major_minor = f'{language_major_minor.major}.{language_major_minor.minor}'
 
             if target_major_minor != language_major_minor:
                 Render.panel.failure(

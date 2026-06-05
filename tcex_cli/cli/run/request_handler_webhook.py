@@ -38,7 +38,7 @@ class RequestHandlerWebhook(http.server.BaseHTTPRequestHandler):
         content_length = int(self.headers.get('content-length', 0))
         if content_length:
             body = self.rfile.read(content_length)
-            self.server.redis_client.hset(request_key, 'request.body', body)  # type: ignore
+            self.server.redis_client.hset(request_key, 'request.body', body)
 
         return {
             'appId': 95,

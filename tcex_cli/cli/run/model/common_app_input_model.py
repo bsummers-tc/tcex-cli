@@ -1,11 +1,11 @@
 """TcEx Framework Module"""
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 from tcex_cli.cli.run.model.common_model import CommonModel
 
 
-class InputsModel(CommonModel, extra=Extra.allow):
+class InputsModel(CommonModel, extra='allow'):
     """InputsModel"""
 
 
