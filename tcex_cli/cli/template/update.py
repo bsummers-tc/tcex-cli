@@ -37,6 +37,15 @@ def command(
     force: bool = typer.Option(
         default=False, help="Update files from template even if they haven't changed."
     ),
+    no_prompt: bool = typer.Option(
+        False,  # noqa: FBT003
+        '--no-prompt',
+        help=(
+            'Run non-interactively: overwrite template-owned files and preserve '
+            '(without prompting) locally-modified non-template files, reporting them '
+            'for manual review.'
+        ),
+    ),
     branch: str = typer.Option(
         default_branch, help='The git branch of the tcex-app-template repository to use.'
     ),
@@ -52,6 +61,12 @@ def command(
     The template name and type are read from the project's tcex.json file.
     Use --template and --type only for legacy projects where tcex.json is
     missing those values.
+
+    Template-owned files (declared in each template's template_files) are always
+    overwritten without prompting. Use --no-prompt for a fully non-interactive
+    run (e.g. scripting a tcex2->tcex4 migration): locally-modified non-template
+    files are preserved untouched and reported for manual review instead of
+    prompting.
 
     Optional environment variables include:\n
     * PROXY_HOST\n
@@ -92,7 +107,7 @@ def command(
         cli.clear_cache(branch)
 
     try:
-        cli.update(branch, template_name, template_type, force=force)
+        cli.update(branch, template_name, template_type, force=force, no_prompt=no_prompt)
 
         # use the resolved values for the summary
         resolved_name = template_name or tj_model.template_name

@@ -211,6 +211,7 @@ class Planner:
         dest: Path,
         file_name: str = 'manifest.json',
         force=False,
+        force_keys: set[str] | None = None,
     ) -> Plan:
         """Build an update plan by comparing template and local manifests.
 
@@ -233,9 +234,22 @@ class Planner:
            - If the local file is gone or unchanged from last-known hash,
              auto-remove (safe cleanup).
            - If the user modified the file, prompt before removing.
+
+        ``force_keys`` is the set of project-relative keys declared as
+        template-owned (via each template.yaml ``template_files``). Any file
+        whose key is in this set is reconciled against the template hash
+        unconditionally — independent of ``last_commit`` / local-manifest state.
+        The local file is hashed against the template's ``sha256``: if it differs
+        (or the file is missing) it is routed to ``auto_update`` to restore/refresh
+        it from the template; if it already matches it is skipped. This check runs
+        before the ``last_commit`` short-circuit so a stale-but-matching manifest
+        cannot preempt the reconciliation. Keys not in the set keep the default
+        prompt-on-modify behavior.
         """
         template_meta = self.manifest.load_json(temp_dest / file_name)
         local_meta = self.manifest.load_json(dest / file_name)
+
+        force_keys = force_keys or set()
 
         plan = Plan()
 
@@ -258,9 +272,22 @@ class Planner:
             # new file being tracked in the template
             if local_info is None:
                 plan.template_new.append(value)
-                if project_path.exists():
+                if project_path.exists() and key not in force_keys:
                     plan.prompt_user.append(value)
                 else:
+                    plan.auto_update.append(value)
+                continue
+
+            # template-owned files are always reconciled against the template
+            # hash, independent of last_commit / local-manifest state — this
+            # runs before the last_commit short-circuit so a stale-but-matching
+            # manifest cannot preempt the reconciliation.
+            if key in force_keys:
+                current_hash = self.hasher.sha256_file(project_path)
+                if current_hash == template_info['sha256']:
+                    plan.skip.append(value)
+                else:
+                    # differs or missing — restore/refresh from template
                     plan.auto_update.append(value)
                 continue
 
@@ -288,8 +315,8 @@ class Planner:
 
             if current_hash is None:
                 plan.auto_update.append(value)  # already gone
-            elif current_hash == local_info['sha256']:
-                plan.auto_update.append(value)  # unchanged from template — safe to remove
+            elif current_hash == local_info['sha256'] or key in force_keys:
+                plan.auto_update.append(value)  # unchanged or template-owned — safe to remove
             else:
                 plan.prompt_user.append(value)  # user modified — ask first
 
@@ -302,17 +329,29 @@ class Planner:
         template_root: Path,
         project_root: Path,
         force: bool = False,
+        no_prompt: bool = False,
         prompt_fn: Callable[[str], str] = input,
-    ) -> None:
+    ) -> list[tuple]:
         """Apply the plan to the project directory.
 
         Auto-update files are copied/removed without prompting.
         Prompt-user files ask for confirmation via ``prompt_fn``
         (injected for testability — defaults to ``input()``).
+
+        Behavior for the ``prompt_user`` set:
+        - ``force`` → overwrite/remove without prompting.
+        - ``no_prompt`` (and not ``force``) → leave the file untouched on disk
+          (no prompt) and record it as preserved.
+        - otherwise → prompt via ``prompt_fn``.
+
+        Returns the list of preserved ``(local, template)`` tuples (the
+        modified, non-template-owned files left untouched under ``no_prompt``);
+        an empty list for the interactive/force paths.
         """
         auto_set = set(plan.auto_update)
         prompt_set = set(plan.prompt_user)
         removed_keys = {local for local, _template in plan.template_removed}
+        preserved: list[tuple] = []
 
         # auto-update: copies and removals
         for local, template in auto_set:
@@ -322,8 +361,19 @@ class Planner:
             else:
                 self.file_ops.copy_from_template(template_root, template, local_)
 
-        # prompt user: ask before overwriting or removing
-        if prompt_set and not force:
+        if prompt_set and force:
+            # force: overwrite or remove without prompting
+            for local, template in prompt_set:
+                local_ = project_root / local
+                if local in removed_keys:
+                    self.file_ops.remove_file(local_)
+                else:
+                    self.file_ops.copy_from_template(template_root, template, local_)
+        elif prompt_set and no_prompt:
+            # non-interactive: never clobber — preserve and report
+            preserved.extend(sorted(prompt_set))
+        elif prompt_set:
+            # interactive: ask before overwriting or removing
             for local, template in sorted(prompt_set):
                 local_ = project_root / local
                 if local in removed_keys:
@@ -338,10 +388,5 @@ class Planner:
                     )
                     if response == 'y':
                         self.file_ops.copy_from_template(template_root, template, local_)
-        elif prompt_set and force:
-            for local, template in prompt_set:
-                local_ = project_root / local
-                if local in removed_keys:
-                    self.file_ops.remove_file(local_)
-                else:
-                    self.file_ops.copy_from_template(template_root, template, local_)
+
+        return preserved
