@@ -60,20 +60,22 @@ This local repo is a **fork**. `origin` points at the fork; `upstream` is the Th
 - The usual "branch before committing on the default branch" convention does **not** apply to this
   fork — commits to `main` are expected (when the operator makes them — see below).
 
-### Commits are the operator's job — Claude never commits
+### Commits are the operator's job — Claude never stages and never commits
 
-**Claude Code must NEVER create a git commit.** ALL commits — in the parent repo **and** in every
-submodule — are made by the **human operator**. This is enforced by `enforce_no_commit.sh` (a
-PreToolUse hook) and a `Bash(git commit:*)` deny rule; both block `git commit` in any form
-(`-m`, `-a`, `--amend`, `git -C <submodule> commit`, after `&&`/pipes, …) with no override.
+**Claude Code must NEVER stage (`git add`) and NEVER create a git commit.** ALL staging and commits —
+in the parent repo **and** in every submodule — are done by the **human operator**. The commit ban is
+enforced by `enforce_no_commit.sh` (a PreToolUse hook) and a `Bash(git commit:*)` deny rule; both
+block `git commit` in any form (`-m`, `-a`, `--amend`, `git -C <submodule> commit`, after `&&`/pipes,
+…) with no override. **Leave every change UNSTAGED for the human to review, stage, and commit.**
 
 Claude's role stops at **preparing** the change:
 
-- Make the edits, then `git add` the relevant paths (staging is allowed).
-- Run `git status` / `git diff --cached` to show exactly what is ready.
-- **Report** what is staged and the suggested commit message(s); the operator runs `git commit`.
-- The same applies to submodule changes: stage inside the submodule and describe the two-step
-  commit + pointer bump, but let the operator perform both commits.
+- Make the edits and leave them **unstaged** — do not `git add`.
+- Run `git status` / `git diff` to show exactly what changed (unstaged).
+- **Report** what changed and the suggested commit message(s); the operator reviews, runs `git add`,
+  then `git commit`.
+- The same applies to submodule changes: **describe** the two-step commit + pointer bump, but do not
+  stage or commit either — the operator performs both commits.
 
 ## Git Submodules
 
@@ -171,7 +173,7 @@ use it in commands — use `$PROJECT_ROOT`.)
 For paths passed to the **Read/Write/Edit** tools (which do **not** expand env vars), use the `<root>`
 placeholder or a repo-root-relative path in prose — never `$PROJECT_ROOT` in those contexts.
 
-Three `PreToolUse` hooks (in `.claude/scripts/`) enforce this — treat them as hard rules:
+Three `PreToolUse` hooks (in `.claude/hooks/`) enforce this — treat them as hard rules:
 
 - `enforce_no_dynamic_paths.sh` (Bash) — blocks commands containing path-resolving substitutions:
   `$(git …)`, `$(pwd)`, `$(realpath …)`, `$(readlink …)`, `$(cd … )` (and the backtick forms).
@@ -304,11 +306,13 @@ This project uses an orchestrator + specialist subagents (in `.claude/agents/`).
 | `python-test-engineer` | **All** pytest test cases under `tests/`. Does not modify source. |
 | `python-script-specialist` | **Sole author** of standalone scripts (typer + rich, dry-run/`--commit`). Writes to `.claude/scripts/`. |
 | `python-security-auditor` | **Hard security gate** — runs after every code/test/script change; HIGH/critical findings block "done" until fixed. |
+| `tcex-plan-reviewer` | **Opt-in plan-time review gate** — adversarially reviews a freshly drafted plan (when the user opts in) and returns severity-graded findings; the orchestrator iterates to convergence before presenting the plan. Distinct from `python-security-auditor`, which gates at implementation time. |
 
 ## One-Off Scripts (`.claude/scripts/`)
 
 All standalone scripts are authored by `python-script-specialist`. Agent-written helpers live in
-`.claude/scripts/` (alongside the enforcement hooks). A genuine one- or two-line `-c` invocation for
+`.claude/scripts/` (the enforcement hooks live separately in `.claude/hooks/`). A genuine one- or
+two-line `-c` invocation for
 ad-hoc context-gathering is fine and does not need delegation. Python scripts must use the venv's
 absolute `python` path.
 

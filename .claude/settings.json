@@ -1,26 +1,23 @@
 {
   "agent": "tcex-orchestrator",
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "hooks": {
     "PreToolUse": [
       {
         "hooks": [
           {
-            "command": ".claude/scripts/enforce_no_dynamic_paths.sh",
+            "command": ".claude/hooks/enforce_no_dynamic_paths.sh",
             "type": "command"
           },
           {
-            "command": ".claude/scripts/enforce_pinned_paths.sh",
+            "command": ".claude/hooks/enforce_pinned_paths.sh",
             "type": "command"
           },
           {
-            "command": ".claude/scripts/enforce_no_branch_change.sh",
+            "command": ".claude/hooks/enforce_no_branch_change.sh",
             "type": "command"
           },
           {
-            "command": ".claude/scripts/enforce_no_commit.sh",
+            "command": ".claude/hooks/enforce_no_commit.sh",
             "type": "command"
           }
         ],
@@ -29,7 +26,7 @@
       {
         "hooks": [
           {
-            "command": ".claude/scripts/enforce_us_spelling.sh",
+            "command": ".claude/hooks/enforce_us_spelling.sh",
             "type": "command"
           }
         ],

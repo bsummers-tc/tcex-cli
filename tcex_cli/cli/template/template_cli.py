@@ -48,6 +48,7 @@ class TemplateCli(CliABC):
         proxy_port,
         proxy_user,
         proxy_pass,
+        authenticate: bool = False,
     ):
         """Initialize instance properties.
 
@@ -55,6 +56,9 @@ class TemplateCli(CliABC):
         planner pipeline (Hasher -> ManifestStore -> Planner).
         """
         super().__init__()
+
+        # gate GitHub auth behind an explicit opt-in (--authenticate)
+        self.authenticate = authenticate
 
         # GitHub API configuration
         # Override with TCEX_TEMPLATE_GITHUB_USER env var to use a personal fork
@@ -104,8 +108,15 @@ class TemplateCli(CliABC):
             proxy_pass=self.proxy_pass,
         )
 
-        if self.gh_username is not None and self.gh_password is not None:
-            session.auth = HTTPBasicAuth(self.gh_username, self.gh_password)
+        if self.authenticate:
+            if self.gh_username is not None and self.gh_password is not None:
+                session.auth = HTTPBasicAuth(self.gh_username, self.gh_password)
+            else:
+                Render.panel.warning(
+                    'GitHub authentication was requested (--authenticate) but the '
+                    'GITHUB_USER and/or GITHUB_PAT environment variables are not set. '
+                    'Continuing with unauthenticated requests (60 requests/hour limit).'
+                )
 
         return session
 

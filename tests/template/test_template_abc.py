@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 # third-party
 import pytest
+from requests.auth import HTTPBasicAuth
 
 # first-party
 from tcex_cli.cli.template.template_cli import TemplateCli
@@ -228,3 +229,70 @@ class TestResolveTemplateParents:
         cache_dir = template_cli._cache_dir('v2')
         result = template_cli.resolve_template_parents(cache_dir, 'egress', 'organization')
         assert result.count('_app_common') == 1
+
+
+# ------------------------------------------------------------------
+# GitHub Basic auth gating on the session cached_property
+# ------------------------------------------------------------------
+class TestSessionAuth:
+    """Tests for the GitHub auth gating in the ``session`` cached_property.
+
+    Auth is applied only when ``authenticate`` is True AND both
+    ``gh_username`` and ``gh_password`` are set. Attributes are set
+    directly on the instance (before first ``session`` access) to avoid
+    env-timing issues, since ``session`` is a cached_property.
+    """
+
+    def test_no_auth_when_authenticate_false(self, cli):
+        """authenticate=False with both creds set -> no auth is applied."""
+        cli.authenticate = False
+        cli.gh_username = 'user'
+        cli.gh_password = 'pat'
+
+        assert cli.session.auth is None
+
+    def test_basic_auth_when_authenticate_true_with_creds(self, cli):
+        """authenticate=True with both creds set -> HTTPBasicAuth is applied."""
+        cli.authenticate = True
+        cli.gh_username = 'user'
+        cli.gh_password = 'pat'
+
+        auth = cli.session.auth
+        assert isinstance(auth, HTTPBasicAuth)
+        assert auth.username == 'user'
+        assert auth.password == 'pat'
+
+    @pytest.mark.parametrize(
+        argnames='gh_username,gh_password',
+        argvalues=[
+            pytest.param(
+                # username present, password missing
+                'user',
+                None,
+                id='fail-missing-password',
+            ),
+            pytest.param(
+                # username missing, password present
+                None,
+                'pat',
+                id='fail-missing-username',
+            ),
+            pytest.param(
+                # both missing
+                None,
+                None,
+                id='fail-missing-both',
+            ),
+        ],
+    )
+    def test_warns_and_no_auth_when_authenticate_true_missing_creds(
+        self, cli, gh_username, gh_password
+    ):
+        """authenticate=True but a cred is missing -> no auth and a warning."""
+        cli.authenticate = True
+        cli.gh_username = gh_username
+        cli.gh_password = gh_password
+
+        with patch('tcex_cli.cli.template.template_cli.Render') as mock_render:
+            assert cli.session.auth is None
+            mock_render.panel.warning.assert_called_once()
