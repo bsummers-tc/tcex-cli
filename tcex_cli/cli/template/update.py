@@ -34,8 +34,25 @@ def command(
     force: bool = typer.Option(
         default=False, help="Update files from template even if they haven't changed."
     ),
+    no_prompt: bool = typer.Option(
+        False,  # noqa: FBT003
+        '--no-prompt',
+        help=(
+            'Run non-interactively: overwrite template-owned files and preserve '
+            '(without prompting) locally-modified non-template files, reporting them '
+            'for manual review.'
+        ),
+    ),
     branch: str = typer.Option(
         default_branch, help='The git branch of the tcex-app-template repository to use.'
+    ),
+    authenticate: bool = typer.Option(
+        False,  # noqa: FBT003
+        '--authenticate',
+        help=(
+            'Authenticate to GitHub using the GITHUB_USER and GITHUB_PAT environment '
+            'variables (for private template forks or to raise the API rate limit).'
+        ),
     ),
     proxy_host: StrOrNone = typer.Option(None, help='(Advanced) Hostname for the proxy server.'),
     proxy_port: IntOrNone = typer.Option(None, help='(Advanced) Port number for the proxy server.'),
@@ -50,7 +67,15 @@ def command(
     Use --template and --type only for legacy projects where tcex.json is
     missing those values.
 
+    Template-owned files (declared in each template's template_files) are always
+    overwritten without prompting. Use --no-prompt for a fully non-interactive
+    run (e.g. scripting a tcex2->tcex4 migration): locally-modified non-template
+    files are preserved untouched and reported for manual review instead of
+    prompting.
+
     Optional environment variables include:\n
+    * GITHUB_USER\n
+    * GITHUB_PAT\n
     * PROXY_HOST\n
     * PROXY_PORT\n
     * PROXY_USER\n
@@ -67,6 +92,7 @@ def command(
         proxy_port,
         proxy_user,
         proxy_pass,
+        authenticate=authenticate,
     )
 
     tj_model = cli.app.tj.model
@@ -89,7 +115,7 @@ def command(
         cli.clear_cache(branch)
 
     try:
-        cli.update(branch, template_name, template_type, force=force)
+        cli.update(branch, template_name, template_type, force=force, no_prompt=no_prompt)
 
         # use the resolved values for the summary
         resolved_name = template_name or tj_model.template_name

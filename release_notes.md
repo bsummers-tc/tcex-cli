@@ -3,6 +3,8 @@
 ## 2.0.0
 
 -   APP-5104 - Updated to use Pydantic 2.x
+-   APP-5222 - [Deps] Migrated dependency and environment management to “uv” and “pyproject.toml”, replacing “requirements.txt”
+-   APP-5303 - [Template] Gated GitHub authentication behind a new “--authenticate” flag on the “init”, “list”, and “update” commands
 
 ## 1.x
 
@@ -16,6 +18,9 @@
 -   APP-4920 - [Run] - Updated run command to support system apps
 -   APP-5036 - [Message-Broker] Updated message broker connection to not set tls_version
 -   APP-5055 - [Message-Broker] Updated Paho MQTT library and message broker reconnect logic
+-   APP-5299 - [Template] Added “--no-prompt” and force-overwrite of template-owned files to the “update” command
+-   APP-5300 - [Migrate] Updated “migrate” to preview by default with “--apply” and added “--no-prompt” for unattended runs
+-   APP-5301 - [Deps] Hardened dependency lock to avoid shell execution and never write an empty “requirements.lock”
 
 ### 1.0.5
 

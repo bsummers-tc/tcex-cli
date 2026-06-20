@@ -45,6 +45,7 @@ class TemplateCli(CliABC):
         proxy_port,
         proxy_user,
         proxy_pass,
+        authenticate: bool = False,
     ):
         """Initialize instance properties.
 
@@ -52,6 +53,9 @@ class TemplateCli(CliABC):
         planner pipeline (Hasher -> ManifestStore -> Planner).
         """
         super().__init__()
+
+        # gate GitHub auth behind an explicit --authenticate flag
+        self.authenticate = authenticate
 
         # GitHub API configuration
         # Override with TCEX_TEMPLATE_GITHUB_USER env var to use a personal fork
@@ -101,8 +105,15 @@ class TemplateCli(CliABC):
             proxy_pass=self.proxy_pass,
         )
 
-        if self.gh_username is not None and self.gh_password is not None:
-            session.auth = HTTPBasicAuth(self.gh_username, self.gh_password)
+        if self.authenticate:
+            if self.gh_username is not None and self.gh_password is not None:
+                session.auth = HTTPBasicAuth(self.gh_username, self.gh_password)
+            else:
+                Render.panel.warning(
+                    'GitHub authentication was requested (--authenticate) but the '
+                    'GITHUB_USER and/or GITHUB_PAT environment variables are not set. '
+                    'Continuing with unauthenticated requests (60 requests/hour limit).'
+                )
 
         return session
 
@@ -172,6 +183,7 @@ class TemplateCli(CliABC):
         template_type: str | None = None,
         force: bool = False,
         app_builder: bool = False,
+        no_prompt: bool = False,
     ):
         """Update (or initialize) a project with the latest template files.
 
@@ -181,11 +193,16 @@ class TemplateCli(CliABC):
         Steps:
         1. Resolve template_name/type from args or fall back to tcex.json
         2. Validate template_type and template_name against the cache
-        3. Build a merged template directory (parent chain resolution)
-        4. Migrate legacy .template_manifest.json if present
-        5. Build an update plan via Planner.build()
-        6. Apply the plan via Planner.apply() with user prompts
-        7. Copy the merged manifest.json to the project root
+        3. Collect the template-owned file keys (union of ``template_files``)
+        4. Build a merged template directory (parent chain resolution)
+        5. Migrate legacy .template_manifest.json if present
+        6. Build an update plan via Planner.build() (template-owned files forced)
+        7. Apply the plan via Planner.apply() with user prompts
+        8. Copy the merged manifest.json to the project root
+
+        When ``no_prompt`` is set, the run is fully non-interactive: template-owned
+        files are still overwritten, but locally-modified non-template files are
+        left untouched and reported for manual review (never clobbered).
         """
         # resolve from tcex.json if not provided
         _template_name = template_name or self.app.tj.model.template_name
@@ -219,6 +236,14 @@ class TemplateCli(CliABC):
                 f'Available templates: {", ".join(sorted(available)) or "none"}'
             )
 
+        # template-owned files (union of template_files across the parent chain)
+        # are always force-overwritten, even when the local copy was modified
+        force_keys = self._collect_template_file_keys(
+            cache_dir,
+            _template_name,  # type: ignore[arg-type]
+            _template_type,  # type: ignore[arg-type]
+        )
+
         merged_dir = self._build_merged_template(
             cache_dir,
             _template_name,
@@ -232,19 +257,28 @@ class TemplateCli(CliABC):
                 merged_dir,
                 Path.cwd(),
                 force=force,
+                force_keys=force_keys,
             )
             Render.table.key_value('Plan Summary', plan.summary)
 
             def _prompt_fn(msg: str) -> str:
                 return Render.prompt.ask(msg, choices=['y', 'N'], default='N') or 'N'
 
-            self.planner.apply(
+            preserved = self.planner.apply(
                 plan,
                 template_root=merged_dir,
                 project_root=Path.cwd(),
                 force=force,
+                no_prompt=no_prompt,
                 prompt_fn=_prompt_fn,
             )
+
+            # in non-interactive mode, surface the files left untouched for review
+            if no_prompt and preserved:
+                Render.table.key_value(
+                    'Preserved - Review Manually',
+                    {local: 'modified locally - not overwritten' for local, _ in preserved},
+                )
 
             # copy manifest.json to project root so future updates can compare
             merged_manifest = merged_dir / 'manifest.json'
@@ -279,6 +313,40 @@ class TemplateCli(CliABC):
             self.app.tj.model.template_name = template_name
             self.app.tj.model.template_type = template_type
             self.app.tj.write()
+
+    def _collect_template_file_keys(
+        self, cache_dir: Path, template_name: str, template_type: str
+    ) -> set[str]:
+        """Return the union of ``template_files`` across the resolved parent chain.
+
+        These are the template-owned files (declared in each template.yaml's
+        ``template_files``) — files the App developer should not edit and that
+        ``update`` overwrites without prompting. Each entry is normalized to a
+        POSIX project-relative key so it matches the plan/manifest keys (bare
+        filenames pass through unchanged). The ``gitignore`` -> ``.gitignore``
+        rename used in ``_build_merged_template`` is applied defensively so a
+        template that lists ``gitignore`` still maps to the on-disk key.
+        """
+        keys: set[str] = set()
+
+        parents = self.resolve_template_parents(cache_dir, template_name, template_type)
+        for parent_name in parents:
+            config = self.read_template_config(cache_dir, template_type, parent_name)
+            if config is None or not config.template_files:
+                continue
+
+            for entry in config.template_files:
+                if not entry:
+                    continue
+                # normalize to a POSIX project-relative key
+                key = Path(entry).as_posix()
+                # template repos store gitignore without the dot — match the
+                # rename applied during merge so the key lines up with disk
+                if key == 'gitignore':
+                    key = '.gitignore'
+                keys.add(key)
+
+        return keys
 
     # ==================================================================
     # Cache Management
