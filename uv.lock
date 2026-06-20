@@ -916,7 +916,7 @@ dev = [
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "pyupgrade", specifier = ">=3.21.2" },
     { name = "ruff", specifier = ">=0.15.16" },
-    { name = "ty", specifier = ">=0.0.43" },
+    { name = "ty", specifier = ">=0.0.51" },
 ]
 test = [
     { name = "pytest", specifier = ">=9.0.3" },
