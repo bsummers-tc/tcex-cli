@@ -68,14 +68,10 @@ enforced by `enforce_no_commit.sh` (a PreToolUse hook) and a `Bash(git commit:*)
 block `git commit` in any form (`-m`, `-a`, `--amend`, `git -C <submodule> commit`, after `&&`/pipes,
 …) with no override. **Leave every change UNSTAGED for the human to review, stage, and commit.**
 
-Claude's role stops at **preparing** the change:
-
-- Make the edits and leave them **unstaged** — do not `git add`.
-- Run `git status` / `git diff` to show exactly what changed (unstaged).
-- **Report** what changed and the suggested commit message(s); the operator reviews, runs `git add`,
-  then `git commit`.
-- The same applies to submodule changes: **describe** the two-step commit + pointer bump, but do not
-  stage or commit either — the operator performs both commits.
+Claude's role stops at **preparing** the change: make the edits (left **unstaged**), run `git status` /
+`git diff` to show exactly what changed, and **report** it with suggested commit message(s) — the
+operator reviews, stages, and commits. For submodule edits, **describe** the two-step commit + pointer
+bump (see *Git Submodules* below); do not stage or commit either.
 
 ## Git Submodules
 

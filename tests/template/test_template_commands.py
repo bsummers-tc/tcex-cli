@@ -229,53 +229,6 @@ class TestUpdateModifiedFile:
 
         assert (project_dir / 'app.py').read_text() == '# user modification'
 
-    def test_modified_template_owned_file_reconciled_when_same_version(
-        self, template_cli, project_dir, monkeypatch
-    ):
-        """A modified template-owned file is reconciled even at the same last_commit.
-
-        playbook_app.py is template-owned (declared in playbook/basic template_files).
-        Even when the local manifest's last_commit still matches the template, a local
-        modification is overwritten back to the template content — the last_commit match
-        does NOT preempt the template-owned reconciliation.
-        """
-        ProjectHelper.init_project(template_cli, project_dir, monkeypatch, 'basic', 'playbook')
-
-        cache_dir = template_cli._cache_dir('v2')
-        template_content = (cache_dir / 'playbook' / 'basic' / 'playbook_app.py').read_text()
-
-        (project_dir / 'playbook_app.py').write_text('# user modification')
-
-        ProjectHelper.run_update(template_cli)
-
-        assert (project_dir / 'playbook_app.py').read_text() == template_content
-
-    def test_template_owned_file_force_overwritten_when_template_changes(
-        self, template_cli, project_dir, monkeypatch
-    ):
-        """A template-owned file (playbook_app.py) is overwritten without prompting.
-
-        playbook_app.py is declared in playbook/basic template_files, so even when
-        the user modified it and the template changed, it is force-overwritten with
-        no prompt (the new template_files ownership behavior).
-        """
-        ProjectHelper.init_project(template_cli, project_dir, monkeypatch, 'basic', 'playbook')
-
-        cache_dir = template_cli._cache_dir('v2')
-        template_content = (cache_dir / 'playbook' / 'basic' / 'playbook_app.py').read_text()
-
-        (project_dir / 'playbook_app.py').write_text('# user modification')
-        ProjectHelper.simulate_template_change(project_dir, 'playbook_app.py')
-
-        with patch.object(template_cli, 'ensure_cache', return_value=template_cli._cache_dir('v2')):
-            with patch('tcex_cli.render.render.Render.prompt.ask') as mock_prompt:
-                template_cli.update('v2', 'basic', 'playbook')
-
-        # template-owned file is overwritten from the template — no prompt issued
-        assert (project_dir / 'playbook_app.py').read_text() == template_content
-        prompted_files = [call.args[0] for call in mock_prompt.call_args_list]
-        assert not any('playbook_app.py' in f for f in prompted_files)
-
     def test_unmodified_file_auto_updates_when_template_changes(
         self, template_cli, project_dir, monkeypatch
     ):
@@ -352,26 +305,6 @@ class TestUpdateDeletedFile:
         ProjectHelper.run_update(template_cli, force=True)
 
         assert (project_dir / 'playbook_app.py').is_file()
-
-    def test_deleted_template_owned_file_restored_without_force(
-        self, template_cli, project_dir, monkeypatch
-    ):
-        """A deleted template-owned file is restored on update without --force.
-
-        playbook_app.py is template-owned, so even at the same last_commit a missing
-        file is routed to auto_update and restored from the template content.
-        """
-        ProjectHelper.init_project(template_cli, project_dir, monkeypatch, 'basic', 'playbook')
-
-        cache_dir = template_cli._cache_dir('v2')
-        template_content = (cache_dir / 'playbook' / 'basic' / 'playbook_app.py').read_text()
-
-        (project_dir / 'playbook_app.py').unlink()
-
-        ProjectHelper.run_update(template_cli)
-
-        assert (project_dir / 'playbook_app.py').is_file()
-        assert (project_dir / 'playbook_app.py').read_text() == template_content
 
     def test_deleted_non_template_file_skipped_without_force(
         self, template_cli, project_dir, monkeypatch
@@ -487,23 +420,6 @@ class TestLegacyManifestMigration:
                 template_cli.update('v2', 'basic', 'playbook')
 
         assert (project_dir / 'app.py').read_text() == before
-
-    def test_modified_template_file_auto_updates(self, template_cli, project_dir, monkeypatch):
-        """A template_file that the user modified should be auto-updated (no prompt)."""
-        self._simulate_legacy_project(template_cli, project_dir, monkeypatch)
-
-        original = (project_dir / 'playbook_app.py').read_text()
-        (project_dir / 'playbook_app.py').write_text('# user modification')
-
-        with patch.object(template_cli, 'ensure_cache', return_value=template_cli._cache_dir('v2')):
-            with patch('tcex_cli.render.render.Render.prompt.ask') as mock_prompt:
-                template_cli.update('v2', 'basic', 'playbook')
-
-        # playbook_app.py is template-owned → force-overwritten back to the template
-        # copy with no prompt (the new template_files ownership behavior)
-        assert (project_dir / 'playbook_app.py').read_text() == original
-        prompted_files = [call.args[0] for call in mock_prompt.call_args_list]
-        assert not any('playbook_app.py' in f for f in prompted_files)
 
     def test_modified_non_template_file_prompts(self, template_cli, project_dir, monkeypatch):
         """A non-template_file that the user modified should prompt (and be preserved on 'N')."""

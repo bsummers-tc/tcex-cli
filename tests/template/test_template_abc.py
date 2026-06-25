@@ -21,9 +21,7 @@ def cli(tmp_path):
     """Return a bare TemplateCli instance with tmp_path as cli_out_path."""
     tcex_dir = tmp_path / '.tcex'
     tcex_dir.mkdir(parents=True, exist_ok=True)
-    inst = TemplateCli(
-        proxy_host=None, proxy_port=None, proxy_user=None, proxy_pass=None
-    )
+    inst = TemplateCli(proxy_host=None, proxy_port=None, proxy_user=None, proxy_pass=None)
     inst.__dict__['cli_out_path'] = tcex_dir
     return inst
 
@@ -40,7 +38,6 @@ class CacheHelper:
 # Cache directory naming
 # ------------------------------------------------------------------
 class TestCacheDir:
-
     def test_path_format(self, cli):
         result = cli._cache_dir('v2')
         assert result == cli.cli_out_path / 'templates' / 'templates-v2'
@@ -118,7 +115,6 @@ class TestEnsureCache:
 # Clear cache
 # ------------------------------------------------------------------
 class TestClearCache:
-
     def test_removes_directory(self, cli):
         cache_dir = CacheHelper.create_cache_dir(cli)
         (cache_dir / 'some_file.txt').write_text('data')

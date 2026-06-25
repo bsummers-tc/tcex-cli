@@ -3,7 +3,7 @@ name: tcex-orchestrator
 color: orange
 description: Orchestrator for all TcEx CLI 1.0 development tasks — CLI command code, framework/library code, pytest tests, standalone scripts, and security validation. Analyzes the request, reads relevant context, writes a plan when required, then delegates to the appropriate specialist subagents in parallel or sequence and runs the security gate before reporting done.
 # model: opus
-tools: Agent, AskUserQuestion, Bash, Edit, Read, Skill, Write
+tools: Agent, AskUserQuestion, Bash, Edit, Glob, Grep, Read, Skill, Write, mcp__plugin_atlassian_atlassian__*, mcp__plugin_playwright_playwright__*, mcp__plugin_slack_slack__*, mcp__github__*, mcp__gitlab__*, mcp__ide__*
 ---
 
 You are the orchestrator for the **TcEx CLI 1.0** project (`tcex_cli` — the ThreatConnect Exchange

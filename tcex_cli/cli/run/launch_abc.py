@@ -282,7 +282,7 @@ class LaunchABC(ABC):
         if r.status_code == http_success:
             token = r.json().get('data')
             self.log.info(
-                f'step=setup, event=using-token, token={token}, token-elapsed={r.elapsed}'
+                f'step=setup, event=using-token, token=<redacted>, token-elapsed={r.elapsed}'
             )
         else:
             self.log.error(f'step=setup, event=failed-to-retrieve-token error="{r.text}"')
