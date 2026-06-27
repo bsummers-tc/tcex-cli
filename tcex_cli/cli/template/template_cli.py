@@ -1,5 +1,6 @@
 """TcEx Framework Module"""
 
+import contextlib
 import json
 import os
 import shutil
@@ -183,7 +184,7 @@ class TemplateCli(CliABC):
         template_type: str | None = None,
         force: bool = False,
         app_builder: bool = False,
-        no_prompt: bool = False,
+        managed: bool = False,
     ):
         """Update (or initialize) a project with the latest template files.
 
@@ -193,16 +194,15 @@ class TemplateCli(CliABC):
         Steps:
         1. Resolve template_name/type from args or fall back to tcex.json
         2. Validate template_type and template_name against the cache
-        3. Collect the template-owned file keys (union of ``template_files``)
-        4. Build a merged template directory (parent chain resolution)
-        5. Migrate legacy .template_manifest.json if present
-        6. Build an update plan via Planner.build() (template-owned files forced)
-        7. Apply the plan via Planner.apply() with user prompts
-        8. Copy the merged manifest.json to the project root
+        3. Build a merged template directory (parent chain resolution)
+        4. Migrate legacy .template_manifest.json if present
+        5. Build an update plan via Planner.build()
+        6. Apply the plan via Planner.apply() with user prompts
+        7. Copy the merged manifest.json to the project root
 
-        When ``no_prompt`` is set, the run is fully non-interactive: template-owned
-        files are still overwritten, but locally-modified non-template files are
-        left untouched and reported for manual review (never clobbered).
+        When ``managed`` is set, the run is silent and non-interactive: only
+        template-managed (boilerplate) files are updated, all other files are
+        left untouched, and nothing is deleted.
         """
         # resolve from tcex.json if not provided
         _template_name = template_name or self.app.tj.model.template_name
@@ -236,14 +236,6 @@ class TemplateCli(CliABC):
                 f'Available templates: {", ".join(sorted(available)) or "none"}'
             )
 
-        # template-owned files (union of template_files across the parent chain)
-        # are always force-overwritten, even when the local copy was modified
-        force_keys = self._collect_template_file_keys(
-            cache_dir,
-            _template_name,  # type: ignore[arg-type]
-            _template_type,  # type: ignore[arg-type]
-        )
-
         merged_dir = self._build_merged_template(
             cache_dir,
             _template_name,
@@ -257,28 +249,20 @@ class TemplateCli(CliABC):
                 merged_dir,
                 Path.cwd(),
                 force=force,
-                force_keys=force_keys,
+                managed_only=managed,
             )
             Render.table.key_value('Plan Summary', plan.summary)
 
             def _prompt_fn(msg: str) -> str:
                 return Render.prompt.ask(msg, choices=['y', 'N'], default='N') or 'N'
 
-            preserved = self.planner.apply(
+            self.planner.apply(
                 plan,
                 template_root=merged_dir,
                 project_root=Path.cwd(),
                 force=force,
-                no_prompt=no_prompt,
                 prompt_fn=_prompt_fn,
             )
-
-            # in non-interactive mode, surface the files left untouched for review
-            if no_prompt and preserved:
-                Render.table.key_value(
-                    'Preserved - Review Manually',
-                    {local: 'modified locally - not overwritten' for local, _ in preserved},
-                )
 
             # copy manifest.json to project root so future updates can compare
             merged_manifest = merged_dir / 'manifest.json'
@@ -313,40 +297,6 @@ class TemplateCli(CliABC):
             self.app.tj.model.template_name = template_name
             self.app.tj.model.template_type = template_type
             self.app.tj.write()
-
-    def _collect_template_file_keys(
-        self, cache_dir: Path, template_name: str, template_type: str
-    ) -> set[str]:
-        """Return the union of ``template_files`` across the resolved parent chain.
-
-        These are the template-owned files (declared in each template.yaml's
-        ``template_files``) — files the App developer should not edit and that
-        ``update`` overwrites without prompting. Each entry is normalized to a
-        POSIX project-relative key so it matches the plan/manifest keys (bare
-        filenames pass through unchanged). The ``gitignore`` -> ``.gitignore``
-        rename used in ``_build_merged_template`` is applied defensively so a
-        template that lists ``gitignore`` still maps to the on-disk key.
-        """
-        keys: set[str] = set()
-
-        parents = self.resolve_template_parents(cache_dir, template_name, template_type)
-        for parent_name in parents:
-            config = self.read_template_config(cache_dir, template_type, parent_name)
-            if config is None or not config.template_files:
-                continue
-
-            for entry in config.template_files:
-                if not entry:
-                    continue
-                # normalize to a POSIX project-relative key
-                key = Path(entry).as_posix()
-                # template repos store gitignore without the dot — match the
-                # rename applied during merge so the key lines up with disk
-                if key == 'gitignore':
-                    key = '.gitignore'
-                keys.add(key)
-
-        return keys
 
     # ==================================================================
     # Cache Management
@@ -530,6 +480,18 @@ class TemplateCli(CliABC):
                 )
                 continue
 
+            # load this parent's manifest.json solely to source the per-file
+            # ``managed`` flag — last_commit/sha256 are still re-hashed from the
+            # copied file (see below), so stale manifest entries can't leak in.
+            # re-read per parent so a child parent's flags override a parent's.
+            parent_manifest: dict = {}
+            with contextlib.suppress(Exception):
+                parent_manifest = json.loads(
+                    (src_dir / 'manifest.json').read_text(encoding='utf-8')
+                )
+            if not isinstance(parent_manifest, dict):
+                parent_manifest = {}
+
             # copy files from this parent (child overwrites parent)
             # manifest is built purely from copied files — no pre-loading
             # of parent manifests, which can contain stale entries for
@@ -563,10 +525,15 @@ class TemplateCli(CliABC):
                 # parent file, so the manifest must reflect the final content
                 rel_key = str(rel)
                 file_hash = self.hasher.sha256_file(dest)
+                # ``managed`` is sourced from the parent manifest (default False);
+                # last_commit/sha256 stay re-hashed from the copied file. For the
+                # renamed gitignore, rel_key is '.gitignore', which matches the
+                # parent manifest's '.gitignore' entry (managed: true).
                 merged_manifest[rel_key] = {
                     'last_commit': file_hash or '',
                     'sha256': file_hash or '',
                     'template_path': rel_key,
+                    'managed': bool(parent_manifest.get(rel_key, {}).get('managed', False)),
                 }
 
         # write the combined manifest to the merged dir
